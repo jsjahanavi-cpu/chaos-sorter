@@ -1,0 +1,19 @@
+{
+  "name": "chaos-sorter",
+  "version": "1.0.0",
+  "description": "An arcade game that executes real-world file clutter cleaning in the background using the Web File System Access API.",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 3000"
+  },
+  "keywords": [
+    "gamification",
+    "productivity",
+    "arcade",
+    "file-system-api",
+    "chore-automation",
+    "hackathon"
+  ],
+  "author": "",
+  "license": "MIT"
+}

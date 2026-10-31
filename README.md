@@ -1,7 +1,8 @@
-# ⚡ Chaos Sorter: The Desktop Dungeon
+# ⚡ Chaos Sorter: The Desktop Dungeon & 5K Inbox Purge
 
-> **Transform the painful digital chore of cleaning cluttered folders into an addictive, feature-packed retro arcade experience with real background OS execution, fruit-ninja slicing mini-games, and RPG progression.**
+> **Tackle painful digital chores—organizing cluttered folders and clearing 5,000 unread emails—through an addictive, multi-mode cyber-arcade suite with real background OS execution, fruit-ninja slicing physics, and RPG progression.**
 
+[![Live on Vercel](https://img.shields.io/badge/Live_Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://chaos-sorter-sigma.vercel.app/)
 [![Web File System Access API](https://img.shields.io/badge/API-File_System_Access_API-blue?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API)
 [![Web Audio API](https://img.shields.io/badge/Audio-Synthesized_Web_Audio-purple?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -13,46 +14,47 @@
 ### The Challenge
 > *"We all procrastinate on painful digital chores—cleaning out 5,000 unread emails, sorting messy folders, reviewing expenses, or fixing lint errors. Build an experience where playing a fast-paced game or interactive story actually executes the real-world chore in the background."*
 
-### Our Solution
-**Chaos Sorter** turns your disorganized `Downloads` or `Desktop` folder into a frantic, rewarding arcade dungeon. Loose clutter items (PDF receipts, screenshots, installers, old code archives) appear as artifacts across multiple interactive game modes:
+### Our Dual-Chore Solution
+**Chaos Sorter** delivers a unified arcade experience addressing the two most ubiquitous digital chores simultaneously:
 
-1. 🕹️ **Arcade Speed Sorter:** High-velocity conveyor matching with dynamic combo multipliers (up to 8X Frenzy).
-2. ⚔️ **Clutter Slasher (Mini-Game):** A *Fruit-Ninja* style airborne slicing experience where files fly in parabolas and are sliced in mid-air.
-3. 👾 **Boss Clutter Rush:** A timed battle against the **"5GB Bloat Dragon"** where sorting large files inflicts direct damage on the boss monster.
-
-Crucially, **the game is not a simulation: in the background, the browser's native Web File System Access API physically creates structured directories and organizes real files on your hard drive in real time.**
-
----
-
-## 🎮 Core Features & Game Mechanics
-
-| Feature | Description |
-| :--- | :--- |
-| **Real Background Execution** | Zero-latency, 100% private file sorting via native `window.showDirectoryPicker()` and `handle.move()`. |
-| **3 Playable Game Modes** | Speed Sorter, Airborne Clutter Slasher, and Bloat Dragon Boss Rush. |
-| **RPG Leveling & XP** | Earn XP per sorted file; level up from *Tidy Novice* (Lvl 1) to *Master of Order* (Lvl 5). |
-| **Trophy Room & Badges** | 6 unlockable achievements with sound fanfares and +250 XP reward boosts. |
-| **Dynamic Themes** | 4 selectable visual palettes: **Cyberpunk Neon**, **Synthwave 80s**, **The Matrix**, and **Midnight Gold**. |
-| **Synthesized Audio** | 100% self-contained mathematical 8-bit sound effects synthesized via the Web Audio API (zero external asset latency). |
-| **Safety Vault & Instant Undo** | Non-destructive sorting with a 1-click `Undo Last` mechanism and exportable cryptographic JSON audit manifests. |
-| **Evaluator Sandbox Mode** | Instant 1-click simulation with 60 realistic clutter artifacts for zero-friction evaluation across any device or browser. |
+1. **Chore #1: Cluttered Folders & Desktops**
+   * Real-time file organization powered by the native **Web File System Access API**.
+   * Play across **Speed Sorter**, airborne **Clutter Slasher**, or the **Bloat Dragon Boss Rush** while real files physically move into clean subdirectories on disk in the background.
+2. **Chore #2: 5,000 Unread Emails & Spam Purge**
+   * An interactive **Inbox Zero** engine simulating 5,000 unread newsletters, promotional spam, and receipts.
+   * Hit **[U] Unsubscribe & Nuke** to vaporize hundreds of emails per sender, watch the live counter drop from 5,000 to 0, and unlock the **Inbox Zero Hero** trophy!
 
 ---
 
-## ⚙️ Architecture Diagram
+## 🎮 4 Distinct Playable Modes
+
+| Mode | Gameplay Experience | Digital Chore Executed |
+| :--- | :--- | :--- |
+| 🕹️ **Arcade Speed Sorter** | Rapid conveyor matching with combo multipliers up to 8X Frenzy. | Moves real local files into `/Organized_Documents`, `/Organized_Media`, etc. |
+| ⚔️ **Clutter Slasher** | Fruit-Ninja style airborne slicing where files fly in parabolas. | Slices clutter items in mid-air and sorts them to destination folders. |
+| 👾 **Boss Clutter Rush** | Timed battle against the 5GB Bloat Dragon. | Sorting large files inflicts direct damage on the boss monster. |
+| 📧 **5K Email Purge** | Fast-paced email classification (Nuke, Trash, Archive, Star). | Rapidly drives 5,000 unread marketing emails down to Inbox Zero. |
+
+---
+
+## ⚙️ Architecture & Security
 
 ```mermaid
 flowchart TD
-    A["User Selects Clutter Folder (/Downloads)"] --> B["Web File System Access API"]
-    B --> C["Scan Root Directory for Loose Files"]
-    C --> D["Game Mode Engine (Arcade / Slasher / Boss)"]
-    D --> E{"Action Executed (Key / Click / Slice)"}
-    E -->|"Visual & Audio Feedback"| F["XP Level-Up, Combos & Particle Sparks"]
-    E -->|"Background Worker Thread"| G["Real OS File System"]
-    G --> H["Create /Organized_Documents, /Organized_Media, etc."]
-    G --> I["Move / Stream File into Destination Folder"]
-    I --> J["Audit Trail & Instant Undo Vault"]
+    A["User Selects Mode (Files vs 5K Emails)"] --> B{"Chore Engine"}
+    B -->|"Folder Mode"| C["Web File System Access API"]
+    C --> D["Real Local Hard Drive (/Downloads)"]
+    D --> E["Physically Move Files to /Organized_*"]
+    B -->|"Email Purge Mode"| F["Client-Side Privacy Engine"]
+    F --> G["Batch Unsubscribe & Nuke Algorithm"]
+    G --> H["5,000 Counter ➔ Inbox Zero (0 Unread)"]
+    E --> I["XP Leveling, Trophies & Safety Audit Manifest"]
+    H --> I
 ```
+
+### 🔒 100% Client-Side Privacy Guarantee
+* **Zero Security Risk:** No personal Google tokens or passwords are required, eliminating credential theft, phishing, or bot-scraping risks.
+* **Zero Cloud Latency:** All file operations run locally on the user's browser via native APIs.
 
 ---
 
@@ -67,7 +69,14 @@ cd "C:\Users\HP\.gemini\antigravity\scratch\chaos-sorter"
 # Start local server with Python
 python -m http.server 3000
 ```
-Open **[http://localhost:3000](http://localhost:3000)** in Google Chrome, Microsoft Edge, or Opera.
+Open **[http://localhost:3000](http://localhost:3000)** in Chrome, Edge, or Opera.
+
+---
+
+## 🌐 Live Production Deployment
+
+* **Live Demo:** [https://chaos-sorter-sigma.vercel.app/](https://chaos-sorter-sigma.vercel.app/)
+* **GitHub Repository:** [https://github.com/jsjahanavi-cpu/chaos-sorter](https://github.com/jsjahanavi-cpu/chaos-sorter)
 
 ---
 

@@ -1,5 +1,5 @@
 /**
- * Chaos Sorter - Master Application Orchestrator
+ * Chaos Sorter - Master Application Orchestrator with 5K Email Purge Integration
  */
 
 import { sound } from './audio.js';
@@ -9,12 +9,14 @@ import { fsManager } from './fileSystem.js';
 import { GameEngine } from './game.js';
 import { progression } from './achievements.js';
 import { SlasherMiniGame } from './slasherGame.js';
+import { EmailPurgeEngine } from './emailGame.js';
 
-// Elements
+// Engines
 const canvas = document.getElementById('particle-canvas');
 const particles = new ParticleEngine(canvas);
 const game = new GameEngine(fsManager, particles);
 const slasher = new SlasherMiniGame(canvas, fsManager, particles, progression);
+const emailEngine = new EmailPurgeEngine(particles, progression);
 
 // DOM Elements
 const statScore = document.getElementById('stat-score');
@@ -32,6 +34,19 @@ const bossBarBanner = document.getElementById('boss-bar-banner');
 const bossHpText = document.getElementById('boss-hp-text');
 const bossHpFill = document.getElementById('boss-hp-fill');
 
+const emailBarBanner = document.getElementById('email-bar-banner');
+const emailUnreadText = document.getElementById('email-unread-text');
+const emailProgressFill = document.getElementById('email-progress-fill');
+const emailCardElement = document.getElementById('email-card-element');
+const emailCardIcon = document.getElementById('email-card-icon');
+const emailCardSender = document.getElementById('email-card-sender');
+const emailCardSubject = document.getElementById('email-card-subject');
+
+const btnEmailNuke = document.getElementById('btn-email-nuke');
+const btnEmailTrash = document.getElementById('btn-email-trash');
+const btnEmailArchive = document.getElementById('btn-email-archive');
+const btnEmailStar = document.getElementById('btn-email-star');
+
 const fileCard = document.getElementById('file-card-element');
 const waitingPrompt = document.getElementById('waiting-prompt');
 const cardIcon = document.getElementById('card-icon');
@@ -45,6 +60,7 @@ const footerStatusText = document.getElementById('footer-status-text');
 const tabClassic = document.getElementById('tab-classic');
 const tabSlasher = document.getElementById('tab-slasher');
 const tabBoss = document.getElementById('tab-boss');
+const tabEmail = document.getElementById('tab-email');
 const themeSelector = document.getElementById('theme-selector');
 
 // Modals
@@ -79,26 +95,45 @@ themeSelector.addEventListener('change', (e) => {
 // Mode Switching Tabs
 function setMode(mode) {
   currentActiveMode = mode;
-  [tabClassic, tabSlasher, tabBoss].forEach(t => t.classList.remove('active'));
+  [tabClassic, tabSlasher, tabBoss, tabEmail].forEach(t => t.classList.remove('active'));
 
   if (mode === 'CLASSIC') {
     tabClassic.classList.add('active');
     bossBarBanner.style.display = 'none';
+    emailBarBanner.style.display = 'none';
+    emailCardElement.style.display = 'none';
     slasher.stop();
+    emailEngine.stop();
   } else if (mode === 'BOSS') {
     tabBoss.classList.add('active');
     bossBarBanner.style.display = 'block';
+    emailBarBanner.style.display = 'none';
+    emailCardElement.style.display = 'none';
     slasher.stop();
+    emailEngine.stop();
   } else if (mode === 'SLASHER') {
     tabSlasher.classList.add('active');
     bossBarBanner.style.display = 'none';
+    emailBarBanner.style.display = 'none';
+    emailCardElement.style.display = 'none';
     fileCard.style.display = 'none';
     waitingPrompt.style.display = 'none';
     game.stopTimers();
+    emailEngine.stop();
     slasher.start(fsManager.files.length > 0 ? fsManager.files : fsManager.initSimulator());
+  } else if (mode === 'EMAIL') {
+    tabEmail.classList.add('active');
+    bossBarBanner.style.display = 'none';
+    emailBarBanner.style.display = 'block';
+    fileCard.style.display = 'none';
+    waitingPrompt.style.display = 'none';
+    emailCardElement.style.display = 'flex';
+    slasher.stop();
+    game.stopTimers();
+    emailEngine.start();
   }
 
-  if (mode !== 'SLASHER' && game.state === 'IDLE' && fsManager.files.length > 0) {
+  if (mode !== 'SLASHER' && mode !== 'EMAIL' && game.state === 'IDLE' && fsManager.files.length > 0) {
     game.start(fsManager.files, mode);
   }
 }
@@ -106,6 +141,36 @@ function setMode(mode) {
 tabClassic.addEventListener('click', () => setMode('CLASSIC'));
 tabBoss.addEventListener('click', () => setMode('BOSS'));
 tabSlasher.addEventListener('click', () => setMode('SLASHER'));
+tabEmail.addEventListener('click', () => setMode('EMAIL'));
+
+// Email Purge Callbacks
+emailEngine.onUpdate = (data) => {
+  emailUnreadText.textContent = `${data.unreadCount.toLocaleString()} UNREAD`;
+  emailProgressFill.style.width = `${data.progressPercent}%`;
+
+  if (data.currentEmail) {
+    emailCardIcon.textContent = data.currentEmail.icon;
+    emailCardSender.textContent = data.currentEmail.sender;
+    emailCardSubject.textContent = data.currentEmail.subject;
+  }
+  footerStatusText.textContent = `Inbox Purge Active: ${data.purgedCount.toLocaleString()} emails nuked (${data.unsubscribedSenders} senders unsubscribed)`;
+};
+
+emailEngine.onVictory = () => {
+  modalGameOver.style.display = 'flex';
+  document.getElementById('gameover-icon').textContent = '🏆';
+  document.getElementById('gameover-title').textContent = 'INBOX ZERO ACHIEVED!';
+  document.getElementById('gameover-score').textContent = '5,000';
+  document.getElementById('gameover-streak').textContent = '100%';
+  document.getElementById('gameover-files').textContent = '5,000 Emails';
+  document.getElementById('gameover-storage').textContent = 'Inbox Clean';
+};
+
+// Email Quick Action Clicks
+btnEmailNuke.addEventListener('click', (e) => emailEngine.unsubscribe({ x: e.clientX, y: e.clientY }));
+btnEmailTrash.addEventListener('click', (e) => emailEngine.trash({ x: e.clientX, y: e.clientY }));
+btnEmailArchive.addEventListener('click', (e) => emailEngine.archive({ x: e.clientX, y: e.clientY }));
+btnEmailStar.addEventListener('click', (e) => emailEngine.star({ x: e.clientX, y: e.clientY }));
 
 // Progression Updates
 progression.onProgressUpdate = (prog) => {
@@ -115,7 +180,7 @@ progression.onProgressUpdate = (prog) => {
 };
 progression.onProgressUpdate(progression.getProgressData());
 
-// Update Audio Toggle State
+// Audio Toggle
 function updateAudioBtn() {
   btnAudioToggle.textContent = sound.isMuted ? '🔇 MUTE' : '🔊 SFX';
 }
@@ -149,9 +214,9 @@ game.onStatsUpdate = (stats) => {
   filesProgress.textContent = `Cleaned: ${stats.sortedCount} / ${stats.totalInitialCount}`;
 };
 
-// Advance to Next Clutter File Card
+// Advance File Card
 game.onFileAdvance = (file, remaining) => {
-  if (!file || currentActiveMode === 'SLASHER') return;
+  if (!file || currentActiveMode === 'SLASHER' || currentActiveMode === 'EMAIL') return;
 
   waitingPrompt.style.display = 'none';
   fileCard.style.display = 'flex';
@@ -182,7 +247,7 @@ game.onStateChange = (state) => {
   }
 };
 
-// Portals & Directional Sorting
+// Directional Sorting
 const portals = {
   DOCUMENTS: document.getElementById('portal-documents'),
   MEDIA: document.getElementById('portal-media'),
@@ -217,8 +282,26 @@ document.querySelectorAll('[data-btn-cat]').forEach(btn => {
   });
 });
 
-// Keyboard Controls
+// Keyboard Controls for both File Sorter and Email Purge
 window.addEventListener('keydown', (e) => {
+  if (currentActiveMode === 'EMAIL') {
+    const key = e.key.toLowerCase();
+    if (key === 'u' || key === '1') {
+      e.preventDefault();
+      emailEngine.unsubscribe();
+    } else if (key === 't' || key === '2') {
+      e.preventDefault();
+      emailEngine.trash();
+    } else if (key === 'a' || key === '3') {
+      e.preventDefault();
+      emailEngine.archive();
+    } else if (key === 's' || key === '4') {
+      e.preventDefault();
+      emailEngine.star();
+    }
+    return;
+  }
+
   if (game.state !== 'PLAYING' || currentActiveMode === 'SLASHER') return;
 
   const key = e.key;
@@ -346,6 +429,7 @@ btnPlayAgain.addEventListener('click', () => {
 
 btnChangeFolder.addEventListener('click', () => {
   game.stopTimers();
+  emailEngine.stop();
   modalGameOver.style.display = 'none';
   modalStart.style.display = 'flex';
 });

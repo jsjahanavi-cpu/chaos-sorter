@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chaos Sorter: The Desktop Dungeon</title>
-  <meta name="description" content="A fast-paced arcade game with mini-games, RPG progression, and boss battles that cleans and organizes real cluttered folders in the background.">
+  <meta name="description" content="A fast-paced arcade game with mini-games, RPG progression, and boss battles that cleans messy folders and nukes 5,000 unread emails in the background.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20y=%220%22%20width=%22100%22%20height=%22100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -20,7 +20,7 @@
         <div class="brand-badge pixel-font">CHAOS SORTER</div>
 
         <!-- Level & XP Progress -->
-        <div class="xp-container" title="Clean files to earn XP and level up!">
+        <div class="xp-container" title="Clean files & emails to earn XP and level up!">
           <div class="xp-label">
             <span id="player-level-title" style="font-weight: 700; color: #38bdf8;">Lvl 1: Novice</span>
             <span id="player-xp-val">0 XP</span>
@@ -35,6 +35,7 @@
           <button id="tab-classic" class="tab-btn active">🕹️ Arcade</button>
           <button id="tab-slasher" class="tab-btn">⚔️ Slasher</button>
           <button id="tab-boss" class="tab-btn">👾 Boss Rush</button>
+          <button id="tab-email" class="tab-btn">📧 5K Emails</button>
         </div>
       </div>
 
@@ -69,7 +70,6 @@
 
       <!-- Right Action Controls -->
       <div style="display: flex; gap: 8px; align-items: center;">
-        <!-- Theme Switcher -->
         <select id="theme-selector" class="btn-portal" style="padding: 6px 10px; font-size: 11px;">
           <option value="cyberpunk">🌌 Cyberpunk</option>
           <option value="synthwave">🌅 Synthwave</option>
@@ -94,6 +94,17 @@
       </div>
     </div>
 
+    <!-- Email Unread Purge Banner (Visible in 5K Emails Mode) -->
+    <div id="email-bar-banner" style="display: none; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 12px; padding: 8px 16px; margin-top: 8px; text-align: center;">
+      <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700;">
+        <span class="pixel-font" style="color: #38bdf8;">📧 INBOX PURGE: 5,000 UNREAD EMAILS</span>
+        <span id="email-unread-text" style="color: #f59e0b; font-size: 13px;">5,000 UNREAD</span>
+      </div>
+      <div class="boss-hp-bar" style="background: #1e293b;">
+        <div id="email-progress-fill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #38bdf8, #22c55e); transition: width 0.2s ease;"></div>
+      </div>
+    </div>
+
     <!-- Main Game Stage -->
     <main id="game-stage">
       <!-- Left Portal: Documents -->
@@ -115,8 +126,9 @@
         </div>
       </div>
 
-      <!-- Center Play Area & Dynamic File Card -->
+      <!-- Center Play Area -->
       <div class="center-arena">
+        <!-- File Clutter Card -->
         <div id="file-card-element" class="file-card" style="display: none;">
           <div id="card-icon" class="file-icon-box">📦</div>
           <div id="card-name" class="file-name">loading_clutter_item.zip</div>
@@ -126,7 +138,6 @@
             <span id="card-rec-badge" class="file-hint">Auto: Documents</span>
           </div>
 
-          <!-- Quick click buttons -->
           <div class="quick-controls">
             <button class="btn-portal" data-btn-cat="DOCUMENTS" style="border-color: rgba(56, 189, 248, 0.5);">[1] Doc</button>
             <button class="btn-portal" data-btn-cat="MEDIA" style="border-color: rgba(244, 63, 94, 0.5);">[2] Media</button>
@@ -136,10 +147,30 @@
           </div>
         </div>
 
+        <!-- Email Purge Card -->
+        <div id="email-card-element" class="file-card" style="display: none; border-color: #38bdf8;">
+          <div id="email-card-icon" class="file-icon-box" style="font-size: 34px;">🏷️</div>
+          <div id="email-card-sender" style="font-size: 16px; font-weight: 800; color: #f8fafc; margin-bottom: 4px;">WeeklyDeals MegaStore</div>
+          <div id="email-card-subject" style="font-size: 13px; color: #94a3b8; margin-bottom: 12px; font-style: italic;">🔥 85% OFF FLASH SALE - Ends in 2 Hours!</div>
+          <div style="font-size: 11px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 4px 12px; border-radius: 8px; margin-bottom: 16px;">
+            ⚠️ 240 unread emails detected from this sender
+          </div>
+
+          <!-- Email Action Controls -->
+          <div class="quick-controls" style="flex-wrap: wrap; justify-content: center;">
+            <button id="btn-email-nuke" class="btn-arcade" style="background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 11px; padding: 10px 14px;">
+              💥 [U] Unsubscribe & Nuke
+            </button>
+            <button id="btn-email-trash" class="btn-portal" style="border-color: #f59e0b;">🗑️ [T] Trash</button>
+            <button id="btn-email-archive" class="btn-portal" style="border-color: #38bdf8;">📦 [A] Archive</button>
+            <button id="btn-email-star" class="btn-portal" style="border-color: #eab308;">★ [S] Star</button>
+          </div>
+        </div>
+
         <div id="waiting-prompt" style="text-align: center; color: #94a3b8;">
           <div style="font-size: 42px; margin-bottom: 12px;">⚡</div>
           <p class="pixel-font" style="font-size: 14px; margin-bottom: 8px;">SELECT A MODE TO BEGIN</p>
-          <p style="font-size: 13px;">Play against your real Downloads folder or test the Evaluator Sandbox.</p>
+          <p style="font-size: 13px;">Play against your real Downloads folder, slice clutter, or purge 5,000 unread emails.</p>
         </div>
       </div>
 
@@ -182,7 +213,7 @@
       <div style="font-size: 44px; margin-bottom: 10px;">🎮</div>
       <h1 class="pixel-font" style="font-size: 18px; color: var(--primary-accent); margin-bottom: 12px;">CHAOS SORTER: DESKTOP DUNGEON</h1>
       <p style="font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px;">
-        Sort digital clutter artifacts into dimensional portals, slice flying junk files, or defeat the Bloat Dragon—while <strong>real files get organized on your machine in the background!</strong>
+        Sort digital clutter artifacts into dimensional portals, slice flying junk files, or <strong>nuke 5,000 unread emails</strong>—while real work executes in the background!
       </p>
 
       <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -195,7 +226,7 @@
       </div>
 
       <div style="margin-top: 18px; font-size: 11px; color: #64748b; line-height: 1.4;">
-        🔒 <strong>100% Client-Side Privacy:</strong> Zero files are sent over the internet. Supported on Chrome, Edge, and Opera.
+        🔒 <strong>100% Client-Side Privacy:</strong> Zero files or emails leave your computer. Supported on Chrome, Edge, and Opera.
       </div>
     </div>
   </div>
@@ -243,7 +274,7 @@
         <h3 class="pixel-font" style="font-size: 14px; color: #f59e0b;">🏆 TROPHY ROOM & BADGES</h3>
         <button id="btn-close-trophies" class="btn-portal" style="padding: 4px 10px;">✕ Close</button>
       </div>
-      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Complete gameplay feats to unlock badges and earn bonus XP!</p>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Complete gameplay feats across Files and Emails to earn bonus XP!</p>
       
       <div class="badges-grid" id="badges-container">
         <!-- Injected via JavaScript -->

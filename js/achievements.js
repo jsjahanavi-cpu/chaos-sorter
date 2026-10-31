@@ -18,11 +18,12 @@ export class ProgressionManager {
     ];
 
     this.achievements = [
-      { id: 'first_sort', icon: '🧹', title: 'First Clean', desc: 'Sort your first 5 files', threshold: 5 },
+      { id: 'first_sort', icon: '🧹', title: 'First Clean', desc: 'Sort your first 5 files' },
       { id: 'combo_frenzy', icon: '⚡', title: 'Frenzy Master', desc: 'Reach an 8X combo multiplier' },
       { id: 'storage_titan', icon: '💾', title: 'Storage Titan', desc: 'Clean over 100 MB of clutter' },
       { id: 'ninja_master', icon: '⚔️', title: 'Clutter Ninja', desc: 'Slice 10 files in Slasher mode' },
       { id: 'boss_slayer', icon: '🐉', title: 'Dragon Slayer', desc: 'Defeat the 5GB Bloat Boss' },
+      { id: 'inbox_zero', icon: '🏆', title: 'Inbox Zero Hero', desc: 'Nuked all 5,000 unread emails!' },
       { id: 'perfectionist', icon: '🎯', title: 'Flawless Flow', desc: 'Maintain a 15-file streak without error' }
     ];
 
@@ -68,7 +69,7 @@ export class ProgressionManager {
 
     sound.playLevelUp();
     this.showToast(`🏆 UNLOCKED: ${ach.title} (${ach.desc})`, '#f59e0b');
-    this.addXp(250); // XP bonus for badge unlock
+    this.addXp(250);
 
     if (this.onProgressUpdate) this.onProgressUpdate(this.getProgressData());
   }

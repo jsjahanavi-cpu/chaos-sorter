@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chaos Sorter: The Desktop Dungeon</title>
+  <title>Chaos Sorter: The Desktop Dungeon & 5K Inbox Purge</title>
   <meta name="description" content="A fast-paced arcade game with mini-games, RPG progression, and boss battles that cleans messy folders and nukes 5,000 unread emails in the background.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20y=%220%22%20width=%22100%22%20height=%22100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="stylesheet" href="css/style.css">
@@ -13,10 +13,175 @@
   <div class="scanlines"></div>
   <canvas id="particle-canvas"></canvas>
 
+  <!-- =========================================
+       FRONT LANDING & LOGIN HERO PAGE
+       ========================================= -->
+  <div id="landing-page">
+    <!-- Landing Top Navbar -->
+    <nav class="landing-nav">
+      <div class="brand-logo-glow">
+        <span style="font-size: 18px;">⚡</span>
+        <span>CHAOS SORTER</span>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <select id="landing-theme-selector" class="btn-portal" style="padding: 6px 10px; font-size: 11px;">
+          <option value="cyberpunk">🌌 Cyberpunk</option>
+          <option value="synthwave">🌅 Synthwave</option>
+          <option value="matrix">🟢 Matrix</option>
+          <option value="midnight">🌑 Midnight</option>
+        </select>
+
+        <button id="btn-nav-launch" class="btn-arcade" style="padding: 8px 18px; font-size: 12px;">
+          🎮 Play Arcade ➔
+        </button>
+      </div>
+    </nav>
+
+    <!-- Hero Grid -->
+    <section class="landing-hero">
+      <!-- Left Column: Headline & Value Prop -->
+      <div>
+        <div class="hero-tag">
+          <span>🏆</span>
+          <span>CHORE GAMIFICATION & AUTOMATION</span>
+        </div>
+
+        <h1 class="hero-title">
+          CONQUER DIGITAL CHAOS THROUGH <span class="gradient-text">HIGH-SPEED PLAY.</span>
+        </h1>
+
+        <p class="hero-desc">
+          Stop procrastinating on painful digital chores. Clean messy folders and vaporize 5,000 unread emails through fast-paced retro mini-games while <strong>real-world organization executes in the background.</strong>
+        </p>
+
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+          <button id="btn-hero-launch-real" class="btn-arcade" style="font-size: 14px; padding: 14px 26px;">
+            📂 SELECT REAL FOLDER & PLAY
+          </button>
+          <button id="btn-hero-launch-sim" class="btn-secondary" style="font-size: 14px; padding: 14px 22px;">
+            🚀 INSTANT SANDBOX DEMO
+          </button>
+        </div>
+
+        <div style="margin-top: 32px; display: flex; gap: 24px; font-size: 12px; color: #94a3b8;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="color: #22c55e;">✓</span> 100% Client Privacy
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="color: #38bdf8;">✓</span> Native Web File System API
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="color: #f59e0b;">✓</span> 4 Game Modes
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Front Page Google Auth Card -->
+      <div>
+        <div class="front-auth-card">
+          <div class="aurora-glow-hero"></div>
+
+          <div style="position: relative; z-index: 5;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <span class="pixel-font" style="font-size: 10px; color: #38bdf8;">GOOGLE IDENTITY SYNC</span>
+              <span style="font-size: 11px; color: #22c55e; font-weight: 700;">● Online</span>
+            </div>
+
+            <!-- UNCONNECTED STATE ON FRONT PAGE -->
+            <div id="front-unauth-box">
+              <h2 style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
+                Connect Google Account
+              </h2>
+              <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+                Link your Gmail to track 5K email clearances and claim <strong style="color: #f59e0b;">+500 Bonus XP</strong>!
+              </p>
+
+              <!-- One-Click Google Sign-In Button -->
+              <button id="btn-front-google" class="btn-google-auth">
+                <svg class="google-icon-svg" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>One-Click Sign In with Google</span>
+              </button>
+
+              <div style="display: flex; align-items: center; margin: 14px 0; color: #64748b; font-size: 10px;">
+                <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+                <span style="padding: 0 10px;">OR GMAIL ADDRESS</span>
+                <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+              </div>
+
+              <input type="email" id="front-input-email" class="aurora-input" placeholder="e.g. jsjahanavi.cpu@gmail.com" value="jsjahanavi.cpu@gmail.com" style="margin-top: 0; padding: 10px 14px; font-size: 13px;">
+
+              <button id="btn-front-enter-dungeon" class="btn-enter-dungeon">
+                ⚡ LINK GMAIL & ENTER DUNGEON ➔
+              </button>
+            </div>
+
+            <!-- CONNECTED STATE ON FRONT PAGE -->
+            <div id="front-auth-box" style="display: none; text-align: center;">
+              <div class="profile-avatar-large" style="margin: 10px auto 12px auto;">
+                <div class="profile-avatar-inner" id="front-avatar-display">J</div>
+              </div>
+              <h3 id="front-name-display" style="font-size: 18px; font-weight: 800; color: #f8fafc; margin-bottom: 2px;">Jahanavi</h3>
+              <span id="front-email-display" style="font-size: 12px; color: #38bdf8; display: block; margin-bottom: 12px;">jsjahanavi.cpu@gmail.com</span>
+
+              <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 16px;">
+                <span>✓</span> Google Account Authenticated
+              </div>
+
+              <button id="btn-front-continue-play" class="btn-enter-dungeon">
+                🎮 LAUNCH ARCADE DUNGEON ➔
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 Interactive Features Showcase Cards -->
+    <section class="landing-features-grid">
+      <div class="landing-feat-card">
+        <div class="feat-icon-box" style="color: #38bdf8;">🕹️</div>
+        <h3 class="feat-title">Arcade Speed Sorter</h3>
+        <p class="feat-desc">Conveyor matching with 8X Frenzy multipliers that moves real files into structured folders on disk.</p>
+      </div>
+
+      <div class="landing-feat-card">
+        <div class="feat-icon-box" style="color: #f43f5e;">⚔️</div>
+        <h3 class="feat-title">Airborne Slasher</h3>
+        <p class="feat-desc">Fruit-Ninja style slicing physics where loose clutter files fly in arcs and get shredded in mid-air.</p>
+      </div>
+
+      <div class="landing-feat-card">
+        <div class="feat-icon-box" style="color: #ef4444;">👾</div>
+        <h3 class="feat-title">Bloat Dragon Boss</h3>
+        <p class="feat-desc">A timed battle against the 5GB clutter beast where sorting large files inflicts direct boss damage.</p>
+      </div>
+
+      <div class="landing-feat-card">
+        <div class="feat-icon-box" style="color: #a855f7;">📧</div>
+        <h3 class="feat-title">5,000 Email Purge</h3>
+        <p class="feat-desc">Vaporize unread newsletter spam and promotional threads to claim the Inbox Zero Hero trophy.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- =========================================
+       MAIN ARCADE GAME ARENA (PAGE 2)
+       ========================================= -->
   <div id="app">
     <!-- Top Arcade Header -->
     <header>
       <div class="header-left">
+        <!-- Return to Home Button -->
+        <button id="btn-back-home" class="btn-portal" style="padding: 6px 12px; font-size: 11px; font-weight: 700;" title="Return to Front Page">
+          ⌂ Home
+        </button>
+
         <div class="brand-badge pixel-font">CHAOS SORTER</div>
 
         <!-- Level & XP Progress -->
@@ -162,7 +327,6 @@
             ⚠️ 240 unread emails detected from this sender
           </div>
 
-          <!-- Email Action Controls -->
           <div class="quick-controls" style="flex-wrap: wrap; justify-content: center;">
             <button id="btn-email-nuke" class="btn-arcade" style="background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 11px; padding: 10px 14px;">
               💥 [U] Unsubscribe & Nuke
@@ -216,7 +380,6 @@
   <!-- AURORA GLASSMORPHISM SIGN IN & PROFILE MODAL -->
   <div id="modal-auth" class="modal-overlay" style="display: none;">
     <div class="aurora-modal-content">
-      <!-- Floating Colorful Aurora Orbs -->
       <div class="aurora-glow-1"></div>
       <div class="aurora-glow-2"></div>
       <div class="aurora-glow-3"></div>
@@ -237,7 +400,6 @@
             Link your Gmail to track inbox clearance milestones and unlock <strong style="color: #f59e0b;">+500 XP</strong> & the Verified Agent badge!
           </p>
 
-          <!-- One-Click Google OAuth Button -->
           <button id="btn-google-signin" class="btn-google-auth">
             <svg class="google-icon-svg" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -303,8 +465,8 @@
     </div>
   </div>
 
-  <!-- Start Modal -->
-  <div id="modal-start" class="modal-overlay">
+  <!-- In-Game Start Mode Select Modal -->
+  <div id="modal-start" class="modal-overlay" style="display: none;">
     <div class="modal-content">
       <div style="font-size: 44px; margin-bottom: 10px;">🎮</div>
       <h1 class="pixel-font" style="font-size: 18px; color: var(--primary-accent); margin-bottom: 12px;">CHAOS SORTER: DESKTOP DUNGEON</h1>
@@ -372,9 +534,7 @@
       </div>
       <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Complete gameplay feats across Files and Emails to earn bonus XP!</p>
       
-      <div class="badges-grid" id="badges-container">
-        <!-- Injected via JavaScript -->
-      </div>
+      <div class="badges-grid" id="badges-container"></div>
     </div>
   </div>
 

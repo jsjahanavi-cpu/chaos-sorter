@@ -1,9 +1,8 @@
-/* Chaos Sorter - Cyber Arcade Styling & Aurora Glassmorphism */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Outfit:wght@500;700;800&display=swap');
+/* Chaos Sorter - Cyber Arcade Styling & Front Landing Page Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Outfit:wght@500;600;700;800;900&display=swap');
 
-/* Default Theme: Cyberpunk */
 :root {
-  --bg-primary: #090d16;
+  --bg-primary: #060913;
   --bg-card: #0f172a;
   --primary-accent: #38bdf8;
   --secondary-accent: #9333ea;
@@ -15,14 +14,10 @@
 }
 
 [data-theme="synthwave"] {
-  --bg-primary: #180828;
-  --bg-card: #2d114d;
+  --bg-primary: #140524;
+  --bg-card: #270e44;
   --primary-accent: #f43f5e;
   --secondary-accent: #f59e0b;
-  --color-doc: #ec4899;
-  --color-media: #f43f5e;
-  --color-code: #8b5cf6;
-  --color-archive: #f59e0b;
 }
 
 [data-theme="matrix"] {
@@ -30,21 +25,13 @@
   --bg-card: #052410;
   --primary-accent: #22c55e;
   --secondary-accent: #10b981;
-  --color-doc: #4ade80;
-  --color-media: #22c55e;
-  --color-code: #86efac;
-  --color-archive: #a3e635;
 }
 
 [data-theme="midnight"] {
-  --bg-primary: #0b0f19;
-  --bg-card: #151d30;
+  --bg-primary: #080c14;
+  --bg-card: #121927;
   --primary-accent: #eab308;
   --secondary-accent: #f97316;
-  --color-doc: #fde047;
-  --color-media: #fb923c;
-  --color-code: #cbd5e1;
-  --color-archive: #eab308;
 }
 
 * {
@@ -58,15 +45,24 @@ body {
   background-color: var(--bg-primary);
   color: #f8fafc;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  overflow: hidden;
+  overflow-x: hidden;
   height: 100vh;
   width: 100vw;
   position: relative;
   transition: background-color 0.3s ease;
 }
 
+.pixel-font {
+  font-family: 'Press Start 2P', monospace;
+}
+
+.heading-font {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Background Cyber Grid & CRT scanlines */
 .cyber-grid {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -80,7 +76,7 @@ body {
 }
 
 .scanlines {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -89,11 +85,11 @@ body {
   background-size: 100% 4px;
   pointer-events: none;
   z-index: 2;
-  opacity: 0.45;
+  opacity: 0.35;
 }
 
 #particle-canvas {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -107,21 +103,238 @@ body {
   z-index: 25;
 }
 
-.pixel-font {
-  font-family: 'Press Start 2P', monospace;
+/* =========================================
+   FRONT LANDING & LOGIN PAGE
+   ========================================= */
+
+#landing-page {
+  position: relative;
+  z-index: 30;
+  width: 100vw;
+  min-height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 32px 60px 32px;
+  animation: fadeIn 0.4s ease-out;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.landing-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto 36px auto;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 12px 24px;
+}
+
+.brand-logo-glow {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  background: linear-gradient(135deg, #38bdf8, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.landing-hero {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 40px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+  .landing-hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.hero-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #38bdf8 0%, #c084fc 50%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #94a3b8;
+  margin-bottom: 28px;
+  max-width: 520px;
+}
+
+/* Front Page Google Login Card */
+.front-auth-card {
+  position: relative;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.aurora-glow-hero {
+  position: absolute;
+  top: -40px;
+  right: -30px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f43f5e, #8b5cf6, transparent 70%);
+  filter: blur(40px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Enter Dungeon Big Button */
+.btn-enter-dungeon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: linear-gradient(135deg, #0284c7, #7c3aed);
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 16px 24px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 25px rgba(2, 132, 199, 0.45);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 16px;
+}
+
+.btn-enter-dungeon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 35px rgba(2, 132, 199, 0.65);
+}
+
+/* Features Grid on Landing Page */
+.landing-features-grid {
+  max-width: 1100px;
+  width: 100%;
+  margin: 50px auto 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .landing-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .landing-features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.landing-feat-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 24px 20px;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-feat-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.feat-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.feat-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 8px;
+}
+
+.feat-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+/* =========================================
+   GAME ARENA STYLES
+   ========================================= */
 
 #app {
   position: relative;
   z-index: 30;
-  display: flex;
+  display: none; /* Hidden until entered from landing */
   flex-direction: column;
   height: 100vh;
   width: 100vw;
   padding: 12px 18px;
 }
 
-/* Header */
 header {
   display: flex;
   justify-content: space-between;
@@ -150,7 +363,6 @@ header {
   font-weight: bold;
 }
 
-/* XP Level Bar */
 .xp-container {
   display: flex;
   flex-direction: column;
@@ -180,7 +392,6 @@ header {
   transition: width 0.3s ease;
 }
 
-/* Game Mode Tabs */
 .mode-tabs {
   display: flex;
   background: rgba(15, 23, 42, 0.6);
@@ -262,7 +473,6 @@ header {
   background: linear-gradient(90deg, var(--primary-accent), #f59e0b);
 }
 
-/* User Account Pill in Header */
 .user-pill {
   display: flex;
   align-items: center;
@@ -293,7 +503,6 @@ header {
   color: #fff;
 }
 
-/* Boss Health Bar Banner */
 #boss-bar-banner {
   display: none;
   background: rgba(239, 68, 68, 0.15);
@@ -320,7 +529,6 @@ header {
   transition: width 0.2s ease;
 }
 
-/* Game Stage */
 #game-stage {
   flex: 1;
   display: flex;
@@ -401,7 +609,6 @@ header {
   background: rgba(234, 179, 8, 0.15);
 }
 
-/* Center File Card */
 .center-arena {
   flex: 1;
   display: flex;
@@ -493,7 +700,6 @@ header {
   transform: translateY(-2px);
 }
 
-/* Footer */
 footer {
   display: flex;
   justify-content: space-between;
@@ -513,7 +719,6 @@ footer {
   box-shadow: 0 0 8px #22c55e;
 }
 
-/* Modals */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -574,7 +779,6 @@ footer {
   color: #fff;
 }
 
-/* Badges Grid */
 .badges-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -598,10 +802,6 @@ footer {
   box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
 }
 
-/* =========================================
-   AURORA GLASSMORPHISM SIGN-IN STYLES
-   ========================================= */
-
 .aurora-modal-content {
   position: relative;
   background: rgba(15, 23, 42, 0.85);
@@ -622,7 +822,6 @@ footer {
   100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-/* Colorful Aurora Mesh Background inside Sign In card */
 .aurora-glow-1 {
   position: absolute;
   top: -60px;
@@ -634,7 +833,6 @@ footer {
   filter: blur(40px);
   opacity: 0.55;
   pointer-events: none;
-  animation: floatOrb 8s infinite alternate ease-in-out;
 }
 
 .aurora-glow-2 {
@@ -648,7 +846,6 @@ footer {
   filter: blur(45px);
   opacity: 0.5;
   pointer-events: none;
-  animation: floatOrb 10s infinite alternate-reverse ease-in-out;
 }
 
 .aurora-glow-3 {
@@ -664,12 +861,6 @@ footer {
   pointer-events: none;
 }
 
-@keyframes floatOrb {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(30px, 30px); }
-}
-
-/* Google Sign In Button */
 .btn-google-auth {
   display: flex;
   align-items: center;
@@ -687,7 +878,7 @@ footer {
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .btn-google-auth:hover {
@@ -700,7 +891,6 @@ footer {
   height: 22px;
 }
 
-/* Beautiful Input field */
 .aurora-input {
   width: 100%;
   background: rgba(15, 23, 42, 0.7);
@@ -720,7 +910,6 @@ footer {
   background: rgba(15, 23, 42, 0.9);
 }
 
-/* Connected Profile Card State */
 .connected-profile-card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.15);

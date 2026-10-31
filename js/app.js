@@ -1,5 +1,5 @@
 /**
- * Chaos Sorter - Master Application Orchestrator with Google Auth & 5K Email Purge Integration
+ * Chaos Sorter - Master Application Orchestrator with Front Landing Page & Google Auth
  */
 
 import { sound } from './audio.js';
@@ -18,7 +18,34 @@ const game = new GameEngine(fsManager, particles);
 const slasher = new SlasherMiniGame(canvas, fsManager, particles, progression);
 const emailEngine = new EmailPurgeEngine(particles, progression);
 
-// DOM Elements - Stats
+// Primary Views
+const landingPage = document.getElementById('landing-page');
+const gameApp = document.getElementById('app');
+
+// Landing Page Elements
+const btnNavLaunch = document.getElementById('btn-nav-launch');
+const btnHeroLaunchReal = document.getElementById('btn-hero-launch-real');
+const btnHeroLaunchSim = document.getElementById('btn-hero-launch-sim');
+const landingThemeSelector = document.getElementById('landing-theme-selector');
+
+// Front Page Auth Elements
+const frontUnauthBox = document.getElementById('front-unauth-box');
+const frontAuthBox = document.getElementById('front-auth-box');
+const btnFrontGoogle = document.getElementById('btn-front-google');
+const frontInputEmail = document.getElementById('front-input-email');
+const btnFrontEnterDungeon = document.getElementById('btn-front-enter-dungeon');
+const btnFrontContinuePlay = document.getElementById('btn-front-continue-play');
+const frontAvatarDisplay = document.getElementById('front-avatar-display');
+const frontNameDisplay = document.getElementById('front-name-display');
+const frontEmailDisplay = document.getElementById('front-email-display');
+
+// In-Game Header & Return Home
+const btnBackHome = document.getElementById('btn-back-home');
+const btnUserProfile = document.getElementById('btn-user-profile');
+const userAvatarSmall = document.getElementById('user-avatar-small');
+const userNameSmall = document.getElementById('user-name-small');
+
+// In-Game Stats Elements
 const statScore = document.getElementById('stat-score');
 const statStreak = document.getElementById('stat-streak');
 const statTimer = document.getElementById('stat-timer');
@@ -30,11 +57,7 @@ const playerLevelTitle = document.getElementById('player-level-title');
 const playerXpVal = document.getElementById('player-xp-val');
 const playerXpFill = document.getElementById('player-xp-fill');
 
-// User Profile & Google Auth Elements
-const btnUserProfile = document.getElementById('btn-user-profile');
-const userAvatarSmall = document.getElementById('user-avatar-small');
-const userNameSmall = document.getElementById('user-name-small');
-
+// Auth Modal Elements (In-Game)
 const modalAuth = document.getElementById('modal-auth');
 const btnCloseAuth = document.getElementById('btn-close-auth');
 const authUnconnectedView = document.getElementById('auth-unconnected-view');
@@ -48,12 +71,11 @@ const profileEmailDisplay = document.getElementById('profile-email-display');
 const btnAuthDisconnect = document.getElementById('btn-auth-disconnect');
 const btnAuthDone = document.getElementById('btn-auth-done');
 
-// Boss Elements
+// Boss & Email Banners
 const bossBarBanner = document.getElementById('boss-bar-banner');
 const bossHpText = document.getElementById('boss-hp-text');
 const bossHpFill = document.getElementById('boss-hp-fill');
 
-// Email Purge Elements
 const emailBarBanner = document.getElementById('email-bar-banner');
 const emailUnreadText = document.getElementById('email-unread-text');
 const emailProgressFill = document.getElementById('email-progress-fill');
@@ -67,7 +89,7 @@ const btnEmailTrash = document.getElementById('btn-email-trash');
 const btnEmailArchive = document.getElementById('btn-email-archive');
 const btnEmailStar = document.getElementById('btn-email-star');
 
-// File Cards
+// File Cards & Controls
 const fileCard = document.getElementById('file-card-element');
 const waitingPrompt = document.getElementById('waiting-prompt');
 const cardIcon = document.getElementById('card-icon');
@@ -109,17 +131,62 @@ const btnCloseTrophies = document.getElementById('btn-close-trophies');
 let currentActiveMode = 'CLASSIC';
 
 // ============================================
-// GOOGLE AUTH & USER PROFILE LOGIC
+// PAGE TRANSITIONS: LANDING PAGE <-> GAME ARENA
+// ============================================
+
+function launchGameArena(mode = 'CLASSIC', autoStartSim = false) {
+  landingPage.style.display = 'none';
+  gameApp.style.display = 'flex';
+  window.scrollTo(0, 0);
+
+  if (autoStartSim) {
+    sound.init();
+    const simFiles = fsManager.initSimulator();
+    modalStart.style.display = 'none';
+    game.start(simFiles, mode);
+  } else if (game.state === 'IDLE' && fsManager.files.length === 0) {
+    modalStart.style.display = 'flex';
+  }
+}
+
+function returnToLanding() {
+  game.stopTimers();
+  slasher.stop();
+  emailEngine.stop();
+  gameApp.style.display = 'none';
+  landingPage.style.display = 'flex';
+  window.scrollTo(0, 0);
+  updateAuthUI();
+}
+
+btnBackHome.addEventListener('click', returnToLanding);
+btnNavLaunch.addEventListener('click', () => launchGameArena('CLASSIC', true));
+btnHeroLaunchSim.addEventListener('click', () => launchGameArena('CLASSIC', true));
+
+btnHeroLaunchReal.addEventListener('click', async () => {
+  sound.init();
+  try {
+    const success = await fsManager.pickRealDirectory();
+    if (success && fsManager.files.length > 0) {
+      launchGameArena('CLASSIC', false);
+      modalStart.style.display = 'none';
+      game.start(fsManager.files, 'CLASSIC');
+    }
+  } catch (err) {
+    alert(`Could not open folder: ${err.message}`);
+  }
+});
+
+btnFrontContinuePlay.addEventListener('click', () => launchGameArena('CLASSIC', true));
+
+// ============================================
+// USER AUTH & GOOGLE SYNC ENGINE
 // ============================================
 
 function getUserData() {
   const saved = localStorage.getItem('chaos_sorter_user');
   if (saved) {
-    try {
-      return JSON.parse(saved);
-    } catch (e) {
-      return null;
-    }
+    try { return JSON.parse(saved); } catch (e) { return null; }
   }
   return null;
 }
@@ -127,21 +194,30 @@ function getUserData() {
 function updateAuthUI() {
   const user = getUserData();
   if (user && user.email) {
-    // Signed In State in Header
-    userNameSmall.textContent = user.name || user.email.split('@')[0];
-    userAvatarSmall.textContent = (user.name || user.email)[0].toUpperCase();
+    const displayName = user.name || user.email.split('@')[0];
+    const initial = (user.name || user.email)[0].toUpperCase();
+
+    // In-game header pill
+    userNameSmall.textContent = displayName;
+    userAvatarSmall.textContent = initial;
     userAvatarSmall.style.background = 'linear-gradient(135deg, #10b981, #06b6d4)';
     btnUserProfile.style.borderColor = 'rgba(34, 197, 94, 0.4)';
 
-    // Modal Views
+    // In-game modal
     authUnconnectedView.style.display = 'none';
     authConnectedView.style.display = 'block';
-
-    profileAvatarDisplay.textContent = (user.name || user.email)[0].toUpperCase();
-    profileNameDisplay.textContent = user.name || 'Jahanavi';
+    profileAvatarDisplay.textContent = initial;
+    profileNameDisplay.textContent = displayName;
     profileEmailDisplay.textContent = user.email;
+
+    // Front Landing Page Auth Card
+    frontUnauthBox.style.display = 'none';
+    frontAuthBox.style.display = 'block';
+    frontAvatarDisplay.textContent = initial;
+    frontNameDisplay.textContent = displayName;
+    frontEmailDisplay.textContent = user.email;
   } else {
-    // Not Signed In
+    // Logged out
     userNameSmall.textContent = 'Sign In';
     userAvatarSmall.textContent = '👤';
     userAvatarSmall.style.background = 'linear-gradient(135deg, #f43f5e, #8b5cf6)';
@@ -149,35 +225,48 @@ function updateAuthUI() {
 
     authUnconnectedView.style.display = 'block';
     authConnectedView.style.display = 'none';
+
+    frontUnauthBox.style.display = 'block';
+    frontAuthBox.style.display = 'none';
   }
 }
 updateAuthUI();
 
-// Open Auth Modal
-btnUserProfile.addEventListener('click', () => {
-  updateAuthUI();
-  modalAuth.style.display = 'flex';
-});
-
-btnCloseAuth.addEventListener('click', () => {
-  modalAuth.style.display = 'none';
-});
-
-btnAuthDone.addEventListener('click', () => {
-  modalAuth.style.display = 'none';
-});
-
-// Perform Google Sign-In
 function handleLoginSuccess(email, name = 'Jahanavi') {
   const userData = { email, name, connectedAt: new Date().toISOString() };
   localStorage.setItem('chaos_sorter_user', JSON.stringify(userData));
 
   sound.playLevelUp();
-  progression.addXp(500); // 500 XP Bonus!
+  progression.addXp(500);
   particles.createBurst(window.innerWidth / 2, window.innerHeight / 2, '#38bdf8', 60);
 
   updateAuthUI();
 }
+
+// Front page sign in triggers
+btnFrontGoogle.addEventListener('click', () => {
+  handleLoginSuccess('jsjahanavi.cpu@gmail.com', 'Jahanavi');
+});
+
+btnFrontEnterDungeon.addEventListener('click', () => {
+  const custom = frontInputEmail.value.trim();
+  if (custom && custom.includes('@')) {
+    const namePart = custom.split('@')[0];
+    handleLoginSuccess(custom, namePart.charAt(0).toUpperCase() + namePart.slice(1));
+    launchGameArena('CLASSIC', true);
+  } else {
+    alert('Please enter a valid Gmail address!');
+  }
+});
+
+// In-Game modal triggers
+btnUserProfile.addEventListener('click', () => {
+  updateAuthUI();
+  modalAuth.style.display = 'flex';
+});
+
+btnCloseAuth.addEventListener('click', () => modalAuth.style.display = 'none');
+btnAuthDone.addEventListener('click', () => modalAuth.style.display = 'none');
 
 btnGoogleSignin.addEventListener('click', () => {
   handleLoginSuccess('jsjahanavi.cpu@gmail.com', 'Jahanavi');
@@ -198,10 +287,15 @@ btnAuthDisconnect.addEventListener('click', () => {
   updateAuthUI();
 });
 
-// Theme Selector
-themeSelector.addEventListener('change', (e) => {
-  document.documentElement.setAttribute('data-theme', e.target.value);
-});
+// Theme Selectors (Synced between landing & in-game)
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeSelector.value = theme;
+  landingThemeSelector.value = theme;
+}
+
+themeSelector.addEventListener('change', (e) => applyTheme(e.target.value));
+landingThemeSelector.addEventListener('change', (e) => applyTheme(e.target.value));
 
 // Mode Switching Tabs
 function setMode(mode) {
@@ -277,7 +371,7 @@ emailEngine.onVictory = () => {
   document.getElementById('gameover-storage').textContent = 'Inbox Clean';
 };
 
-// Email Quick Action Clicks
+// Email Action Buttons
 btnEmailNuke.addEventListener('click', (e) => emailEngine.unsubscribe({ x: e.clientX, y: e.clientY }));
 btnEmailTrash.addEventListener('click', (e) => emailEngine.trash({ x: e.clientX, y: e.clientY }));
 btnEmailArchive.addEventListener('click', (e) => emailEngine.archive({ x: e.clientX, y: e.clientY }));
@@ -395,6 +489,8 @@ document.querySelectorAll('[data-btn-cat]').forEach(btn => {
 
 // Keyboard Controls
 window.addEventListener('keydown', (e) => {
+  if (gameApp.style.display !== 'flex') return;
+
   if (currentActiveMode === 'EMAIL') {
     const key = e.key.toLowerCase();
     if (key === 'u' || key === '1') {
@@ -434,7 +530,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Start Real Directory
+// Start Real Directory (From in-game modal)
 btnStartReal.addEventListener('click', async () => {
   sound.init();
   try {

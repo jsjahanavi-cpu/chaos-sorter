@@ -27,7 +27,7 @@ class SoundEngine {
     return this.isMuted;
   }
 
-  // Laser zap / quick clean sound
+  // Quick laser sort chime
   playSort() {
     if (this.isMuted) return;
     this.init();
@@ -52,6 +52,30 @@ class SoundEngine {
     osc.stop(now + 0.1);
   }
 
+  // High-speed Ninja Slice whoosh (for Slasher Mini-game)
+  playSlice() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(900, now);
+    osc.frequency.exponentialRampToValueAtTime(200, now + 0.12);
+
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.12);
+  }
+
   // Ascending combo chime
   playCombo(multiplier = 1) {
     if (this.isMuted) return;
@@ -59,7 +83,7 @@ class SoundEngine {
     if (!this.ctx) return;
 
     const now = this.ctx.currentTime;
-    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
     const baseFreq = notes[Math.min(multiplier - 1, notes.length - 1)] || 523.25;
 
     const osc = this.ctx.createOscillator();
@@ -79,7 +103,7 @@ class SoundEngine {
     osc.stop(now + 0.15);
   }
 
-  // Error buzz for incorrect / missed action
+  // Error buzz
   playError() {
     if (this.isMuted) return;
     this.init();
@@ -103,40 +127,64 @@ class SoundEngine {
     osc.stop(now + 0.15);
   }
 
-  // Frenzy Mode activation fanfare
-  playFrenzy() {
+  // Level Up / Achievement fanfare
+  playLevelUp() {
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
 
     const now = this.ctx.currentTime;
-    const chords = [523.25, 659.25, 783.99, 1046.50];
-    
-    chords.forEach((freq, idx) => {
+    const notes = [440, 554.37, 659.25, 880, 1108.73];
+
+    notes.forEach((freq, idx) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
       osc.type = 'square';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+      osc.frequency.setValueAtTime(freq, now + idx * 0.08);
 
-      gain.gain.setValueAtTime(0.1, now + idx * 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.2);
+      gain.gain.setValueAtTime(0.12, now + idx * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
-      osc.start(now + idx * 0.05);
-      osc.stop(now + idx * 0.05 + 0.2);
+      osc.start(now + idx * 0.08);
+      osc.stop(now + idx * 0.08 + 0.25);
     });
   }
 
-  // Level complete / Victory fanfare
+  // Boss Hit impact
+  playBossHit() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(120, now);
+    osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.2);
+  }
+
+  // Victory fanfare
   playVictory() {
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
 
-    const notes = [440, 554.37, 659.25, 880];
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     const now = this.ctx.currentTime;
 
     notes.forEach((freq, i) => {
@@ -144,16 +192,16 @@ class SoundEngine {
       const gain = this.ctx.createGain();
 
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, now + i * 0.1);
+      osc.frequency.setValueAtTime(freq, now + i * 0.12);
 
-      gain.gain.setValueAtTime(0.2, now + i * 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.35);
+      gain.gain.setValueAtTime(0.2, now + i * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.4);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
-      osc.start(now + i * 0.1);
-      osc.stop(now + i * 0.1 + 0.35);
+      osc.start(now + i * 0.12);
+      osc.stop(now + i * 0.12 + 0.4);
     });
   }
 }

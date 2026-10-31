@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="cyberpunk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chaos Sorter: The Desktop Dungeon</title>
-  <meta name="description" content="A fast-paced arcade game that cleans and organizes real cluttered folders in the background.">
+  <meta name="description" content="A fast-paced arcade game with mini-games, RPG progression, and boss battles that cleans and organizes real cluttered folders in the background.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20y=%220%22%20width=%22100%22%20height=%22100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -18,15 +18,30 @@
     <header>
       <div class="header-left">
         <div class="brand-badge pixel-font">CHAOS SORTER</div>
-        <div class="stat-item">
-          <span class="stat-label">Mode</span>
-          <span id="current-mode-tag" class="stat-value" style="font-size: 13px; color: #38bdf8;">SIMULATOR</span>
+
+        <!-- Level & XP Progress -->
+        <div class="xp-container" title="Clean files to earn XP and level up!">
+          <div class="xp-label">
+            <span id="player-level-title" style="font-weight: 700; color: #38bdf8;">Lvl 1: Novice</span>
+            <span id="player-xp-val">0 XP</span>
+          </div>
+          <div class="xp-bar-bg">
+            <div id="player-xp-fill" class="xp-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="mode-tabs">
+          <button id="tab-classic" class="tab-btn active">🕹️ Arcade</button>
+          <button id="tab-slasher" class="tab-btn">⚔️ Slasher</button>
+          <button id="tab-boss" class="tab-btn">👾 Boss Rush</button>
         </div>
       </div>
 
+      <!-- Stats Bar -->
       <div class="stats-bar">
         <div class="stat-item">
-          <span class="stat-label">Arcade Score</span>
+          <span class="stat-label">Score</span>
           <div style="display: flex; align-items: center;">
             <span id="stat-score" class="stat-value pixel-font">0</span>
             <span id="multiplier-tag" class="multiplier-pill" style="display: none;">1X</span>
@@ -47,16 +62,37 @@
         </div>
 
         <div class="stat-item">
-          <span class="stat-label">Storage Cleaned</span>
+          <span class="stat-label">Cleaned</span>
           <span id="stat-cleaned" class="stat-value" style="color: #22c55e;">0 B</span>
         </div>
       </div>
 
+      <!-- Right Action Controls -->
       <div style="display: flex; gap: 8px; align-items: center;">
-        <button id="btn-audio-toggle" class="btn-portal" title="Toggle Sound">🔊 SFX ON</button>
-        <button id="btn-open-audit" class="btn-portal" title="View Safety Vault & Undo Log">🛡️ Audit Log</button>
+        <!-- Theme Switcher -->
+        <select id="theme-selector" class="btn-portal" style="padding: 6px 10px; font-size: 11px;">
+          <option value="cyberpunk">🌌 Cyberpunk</option>
+          <option value="synthwave">🌅 Synthwave</option>
+          <option value="matrix">🟢 Matrix</option>
+          <option value="midnight">🌑 Midnight</option>
+        </select>
+
+        <button id="btn-trophies" class="btn-portal" title="View Unlocked Badges">🏆 Trophies</button>
+        <button id="btn-audio-toggle" class="btn-portal" title="Toggle Sound">🔊 SFX</button>
+        <button id="btn-open-audit" class="btn-portal" title="View Safety Vault & Undo Log">🛡️ Audit</button>
       </div>
     </header>
+
+    <!-- Boss Health Bar Banner (Visible in Boss Rush) -->
+    <div id="boss-bar-banner">
+      <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700;">
+        <span class="pixel-font" style="color: #ef4444;">🐉 5GB BLOAT DRAGON (BOSS)</span>
+        <span id="boss-hp-text" style="color: #fca5a5;">1000 / 1000 HP</span>
+      </div>
+      <div class="boss-hp-bar">
+        <div id="boss-hp-fill" class="boss-hp-fill"></div>
+      </div>
+    </div>
 
     <!-- Main Game Stage -->
     <main id="game-stage">
@@ -90,7 +126,7 @@
             <span id="card-rec-badge" class="file-hint">Auto: Documents</span>
           </div>
 
-          <!-- Quick click buttons for touch or mouse -->
+          <!-- Quick click buttons -->
           <div class="quick-controls">
             <button class="btn-portal" data-btn-cat="DOCUMENTS" style="border-color: rgba(56, 189, 248, 0.5);">[1] Doc</button>
             <button class="btn-portal" data-btn-cat="MEDIA" style="border-color: rgba(244, 63, 94, 0.5);">[2] Media</button>
@@ -103,7 +139,7 @@
         <div id="waiting-prompt" style="text-align: center; color: #94a3b8;">
           <div style="font-size: 42px; margin-bottom: 12px;">⚡</div>
           <p class="pixel-font" style="font-size: 14px; margin-bottom: 8px;">SELECT A MODE TO BEGIN</p>
-          <p style="font-size: 13px;">Play against your messy Downloads folder or test the Simulator Vault.</p>
+          <p style="font-size: 13px;">Play against your real Downloads folder or test the Evaluator Sandbox.</p>
         </div>
       </div>
 
@@ -129,15 +165,13 @@
 
     <!-- Bottom Dock / Safety Bar -->
     <footer>
-      <div class="audit-indicator">
-        <span class="status-dot"></span>
-        <span id="footer-status-text">Background Chore Worker: Ready</span>
-      </div>
+      <div class="status-dot"></div>
+      <span id="footer-status-text" style="font-size: 12px; color: #94a3b8;">Background Chore Worker: Ready</span>
 
-      <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="display: flex; gap: 10px; align-items: center;">
         <span id="files-progress" style="font-size: 12px; color: #94a3b8;">Files: 0 / 0</span>
-        <button id="btn-undo-last" class="btn-portal" style="font-size: 11px;">↩ Undo Last</button>
-        <button id="btn-change-folder" class="btn-portal" style="font-size: 11px;">📁 Change Mode</button>
+        <button id="btn-undo-last" class="btn-portal" style="font-size: 11px;">↩ Undo</button>
+        <button id="btn-change-folder" class="btn-portal" style="font-size: 11px;">📁 Mode</button>
       </div>
     </footer>
   </div>
@@ -145,13 +179,13 @@
   <!-- Start Modal -->
   <div id="modal-start" class="modal-overlay">
     <div class="modal-content">
-      <div style="font-size: 48px; margin-bottom: 12px;">🎮</div>
-      <h1 class="pixel-font" style="font-size: 20px; color: #38bdf8; margin-bottom: 12px;">CHAOS SORTER</h1>
-      <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">
-        Digital chores are painful. Play this high-speed arcade game to sort clutter items into dimensional portals—while <strong>real files get organized on your machine in the background!</strong>
+      <div style="font-size: 44px; margin-bottom: 10px;">🎮</div>
+      <h1 class="pixel-font" style="font-size: 18px; color: var(--primary-accent); margin-bottom: 12px;">CHAOS SORTER: DESKTOP DUNGEON</h1>
+      <p style="font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px;">
+        Sort digital clutter artifacts into dimensional portals, slice flying junk files, or defeat the Bloat Dragon—while <strong>real files get organized on your machine in the background!</strong>
       </p>
 
-      <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
         <button id="btn-start-real" class="btn-arcade">
           📂 SELECT REAL FOLDER (Downloads / Desktop)
         </button>
@@ -160,8 +194,8 @@
         </button>
       </div>
 
-      <div style="margin-top: 20px; font-size: 12px; color: #64748b; line-height: 1.4;">
-        🔒 <strong>Safety Guarantee:</strong> Real files are never permanently deleted. They are safely sorted into clean subdirectories (<code>/Organized_Documents</code>, <code>/Organized_Media</code>) with 100% undo support.
+      <div style="margin-top: 18px; font-size: 11px; color: #64748b; line-height: 1.4;">
+        🔒 <strong>100% Client-Side Privacy:</strong> Zero files are sent over the internet. Supported on Chrome, Edge, and Opera.
       </div>
     </div>
   </div>
@@ -169,29 +203,29 @@
   <!-- Game Over / Victory Modal -->
   <div id="modal-gameover" class="modal-overlay" style="display: none;">
     <div class="modal-content">
-      <div id="gameover-icon" style="font-size: 52px; margin-bottom: 12px;">🏆</div>
-      <h2 id="gameover-title" class="pixel-font" style="font-size: 18px; color: #38bdf8; margin-bottom: 16px;">DUNGEON CLEARED!</h2>
+      <div id="gameover-icon" style="font-size: 48px; margin-bottom: 10px;">🏆</div>
+      <h2 id="gameover-title" class="pixel-font" style="font-size: 16px; color: var(--primary-accent); margin-bottom: 16px;">DUNGEON CLEARED!</h2>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
-        <div style="background: #1e293b; padding: 12px; border-radius: 12px;">
-          <div style="font-size: 11px; color: #94a3b8;">FINAL SCORE</div>
-          <div id="gameover-score" class="pixel-font" style="font-size: 18px; color: #f59e0b; margin-top: 4px;">0</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <div style="background: #1e293b; padding: 10px; border-radius: 10px;">
+          <div style="font-size: 10px; color: #94a3b8;">FINAL SCORE</div>
+          <div id="gameover-score" class="pixel-font" style="font-size: 16px; color: #f59e0b; margin-top: 4px;">0</div>
         </div>
-        <div style="background: #1e293b; padding: 12px; border-radius: 12px;">
-          <div style="font-size: 11px; color: #94a3b8;">MAX COMBO</div>
-          <div id="gameover-streak" class="pixel-font" style="font-size: 18px; color: #38bdf8; margin-top: 4px;">0</div>
+        <div style="background: #1e293b; padding: 10px; border-radius: 10px;">
+          <div style="font-size: 10px; color: #94a3b8;">MAX COMBO</div>
+          <div id="gameover-streak" class="pixel-font" style="font-size: 16px; color: var(--primary-accent); margin-top: 4px;">0</div>
         </div>
-        <div style="background: #1e293b; padding: 12px; border-radius: 12px;">
-          <div style="font-size: 11px; color: #94a3b8;">FILES SORTED</div>
-          <div id="gameover-files" class="pixel-font" style="font-size: 18px; color: #22c55e; margin-top: 4px;">0</div>
+        <div style="background: #1e293b; padding: 10px; border-radius: 10px;">
+          <div style="font-size: 10px; color: #94a3b8;">FILES SORTED</div>
+          <div id="gameover-files" class="pixel-font" style="font-size: 16px; color: #22c55e; margin-top: 4px;">0</div>
         </div>
-        <div style="background: #1e293b; padding: 12px; border-radius: 12px;">
-          <div style="font-size: 11px; color: #94a3b8;">STORAGE CLEANED</div>
-          <div id="gameover-storage" class="pixel-font" style="font-size: 18px; color: #f43f5e; margin-top: 4px;">0 MB</div>
+        <div style="background: #1e293b; padding: 10px; border-radius: 10px;">
+          <div style="font-size: 10px; color: #94a3b8;">STORAGE CLEANED</div>
+          <div id="gameover-storage" class="pixel-font" style="font-size: 16px; color: #f43f5e; margin-top: 4px;">0 MB</div>
         </div>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
         <button id="btn-export-manifest" class="btn-arcade">
           📄 DOWNLOAD CLEANUP MANIFEST (.JSON)
         </button>
@@ -202,23 +236,35 @@
     </div>
   </div>
 
+  <!-- Trophy Room & Achievements Modal -->
+  <div id="modal-trophies" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 620px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 class="pixel-font" style="font-size: 14px; color: #f59e0b;">🏆 TROPHY ROOM & BADGES</h3>
+        <button id="btn-close-trophies" class="btn-portal" style="padding: 4px 10px;">✕ Close</button>
+      </div>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Complete gameplay feats to unlock badges and earn bonus XP!</p>
+      
+      <div class="badges-grid" id="badges-container">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
   <!-- Safety Vault & Audit Log Modal -->
   <div id="modal-audit" class="modal-overlay" style="display: none;">
-    <div class="modal-content" style="max-width: 680px; text-align: left;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 class="pixel-font" style="font-size: 14px; color: #38bdf8;">🛡️ SAFETY VAULT & AUDIT TRAIL</h3>
+    <div class="modal-content" style="max-width: 640px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 class="pixel-font" style="font-size: 13px; color: var(--primary-accent);">🛡️ SAFETY VAULT & AUDIT TRAIL</h3>
         <button id="btn-close-audit" class="btn-portal" style="padding: 4px 10px;">✕ Close</button>
       </div>
-      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">
-        Every real-world file operation executed in the background is strictly verified and logged below.
-      </p>
 
-      <div style="max-height: 280px; overflow-y: auto; background: #090d16; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 16px;" id="audit-table-body">
-        <div style="font-size: 12px; color: #64748b; text-align: center; padding: 24px;">No files sorted yet.</div>
+      <div style="max-height: 250px; overflow-y: auto; background: #090d16; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; margin-bottom: 14px;" id="audit-table-body">
+        <div style="font-size: 12px; color: #64748b; text-align: center; padding: 20px;">No files sorted yet.</div>
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button id="btn-audit-download" class="btn-portal">📥 Export JSON Manifest</button>
+        <button id="btn-audit-download" class="btn-portal">📥 Export Manifest</button>
         <span style="font-size: 11px; color: #64748b;">Powered by Web File System API</span>
       </div>
     </div>

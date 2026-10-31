@@ -1,9 +1,10 @@
 /**
- * Chaos Sorter - Core Arcade Game State Engine
+ * Chaos Sorter - Core Arcade Game State Engine with Boss Rush & XP Integration
  */
 
 import { sound } from './audio.js';
 import { formatBytes } from './categories.js';
+import { progression } from './achievements.js';
 
 export class GameEngine {
   constructor(fsManager, particleEngine) {
@@ -12,15 +13,20 @@ export class GameEngine {
 
     // Game stats
     this.state = 'IDLE'; // 'IDLE' | 'PLAYING' | 'GAMEOVER' | 'VICTORY'
+    this.mode = 'CLASSIC'; // 'CLASSIC' | 'BOSS' | 'SLASHER'
     this.score = 0;
     this.highScore = parseInt(localStorage.getItem('chaos_sorter_high_score') || '0', 10);
     this.streak = 0;
     this.maxStreak = 0;
     this.multiplier = 1;
-    this.timer = 60; // 60-second speed-run arcade mode
+    this.timer = 60;
     this.timerInterval = null;
     this.comboDecayInterval = null;
-    this.comboMeter = 100; // 0 to 100%
+    this.comboMeter = 100;
+
+    // Boss Battle stats
+    this.bossMaxHp = 1000;
+    this.bossHp = 1000;
 
     // Current active file & queue
     this.currentFile = null;
@@ -34,20 +40,24 @@ export class GameEngine {
     this.onStatsUpdate = null;
   }
 
-  start(files) {
+  start(files, mode = 'CLASSIC') {
     if (!files || files.length === 0) {
       alert('No loose files found to organize!');
       return;
     }
 
+    this.mode = mode;
     this.state = 'PLAYING';
     this.score = 0;
     this.streak = 0;
     this.maxStreak = 0;
     this.multiplier = 1;
     this.sortedCount = 0;
-    this.timer = Math.min(120, Math.max(45, files.length * 3)); // dynamic time based on file count
+    this.timer = mode === 'BOSS' ? 45 : Math.min(120, Math.max(45, files.length * 4));
     this.comboMeter = 100;
+
+    this.bossMaxHp = Math.max(500, files.length * 100);
+    this.bossHp = this.bossMaxHp;
 
     this.remainingFiles = [...files];
     this.totalInitialCount = files.length;
@@ -63,23 +73,21 @@ export class GameEngine {
     clearInterval(this.timerInterval);
     clearInterval(this.comboDecayInterval);
 
-    // Main countdown timer
     this.timerInterval = setInterval(() => {
       if (this.state !== 'PLAYING') return;
 
       this.timer--;
       if (this.timer <= 0) {
         this.timer = 0;
-        this.endGame(false); // Time out
+        this.endGame(false);
       }
       this.notifyStats();
     }, 1000);
 
-    // Dynamic combo decay (encourages rapid-fire sorting)
     this.comboDecayInterval = setInterval(() => {
       if (this.state !== 'PLAYING') return;
 
-      this.comboMeter = Math.max(0, this.comboMeter - 1.5);
+      this.comboMeter = Math.max(0, this.comboMeter - 1.2);
       if (this.comboMeter === 0 && this.multiplier > 1) {
         this.multiplier = 1;
         this.streak = 0;
@@ -94,8 +102,8 @@ export class GameEngine {
   }
 
   nextFile() {
-    if (this.remainingFiles.length === 0) {
-      this.endGame(true); // Victory! All files cleaned
+    if (this.remainingFiles.length === 0 || (this.mode === 'BOSS' && this.bossHp <= 0)) {
+      this.endGame(true);
       return;
     }
 
@@ -106,50 +114,63 @@ export class GameEngine {
     this.notifyStats();
   }
 
-  /**
-   * Action trigger when user sorts current file into category
-   */
   async sortFile(chosenCategory, eventCoordinates = null) {
     if (this.state !== 'PLAYING' || !this.currentFile) return;
 
     const file = this.currentFile;
     const isRecommended = file.targetCategory.id === chosenCategory.id;
-    
-    // Background execution of real file move
     const execPromise = this.fs.executeChore(file, chosenCategory);
 
-    // Visual & Sound Feedback
     const targetX = eventCoordinates ? eventCoordinates.x : window.innerWidth / 2;
     const targetY = eventCoordinates ? eventCoordinates.y : window.innerHeight / 2;
 
     if (isRecommended) {
-      // Perfect match!
       this.streak++;
       if (this.streak > this.maxStreak) this.maxStreak = this.streak;
 
-      // Update multipliers
-      if (this.streak >= 15) this.multiplier = 8;
-      else if (this.streak >= 10) this.multiplier = 4;
-      else if (this.streak >= 5) this.multiplier = 2;
-      else this.multiplier = 1;
+      // Multipliers
+      if (this.streak >= 15) {
+        this.multiplier = 8;
+        progression.unlock('combo_frenzy');
+        progression.unlock('perfectionist');
+      } else if (this.streak >= 10) {
+        this.multiplier = 4;
+      } else if (this.streak >= 5) {
+        this.multiplier = 2;
+      } else {
+        this.multiplier = 1;
+      }
 
-      // Frenzy check
-      if (this.multiplier === 8 && this.streak % 5 === 0) {
-        sound.playFrenzy();
+      if (this.multiplier === 8) {
+        sound.playCombo(8);
       } else {
         sound.playSort();
         if (this.multiplier > 1) sound.playCombo(this.multiplier);
       }
 
-      // Add score: (100 base + size bonus) * multiplier
       const sizeBonus = Math.min(250, Math.floor(file.size / 100000));
       const points = (100 + sizeBonus) * this.multiplier;
       this.score += points;
 
-      // Reset combo meter
+      // XP Progression
+      progression.addXp(15 * this.multiplier);
+
+      // Boss Damage
+      if (this.mode === 'BOSS') {
+        const damage = 120 * this.multiplier;
+        this.bossHp = Math.max(0, this.bossHp - damage);
+        sound.playBossHit();
+        this.particles.createFloatingText(window.innerWidth / 2, 180, `-${damage} HP!`, '#ef4444', 26);
+        this.particles.triggerScreenShake(8);
+
+        if (this.bossHp <= 0) {
+          progression.unlock('boss_slayer');
+        }
+      }
+
       this.comboMeter = 100;
 
-      // Visual Juice
+      // Visuals
       this.particles.createBurst(targetX, targetY, chosenCategory.color, 35);
       this.particles.createFloatingText(targetX, targetY - 30, `+${points}`, chosenCategory.color, 24);
       if (this.multiplier > 1) {
@@ -157,27 +178,27 @@ export class GameEngine {
       }
       this.particles.triggerScreenShake(this.multiplier >= 4 ? 8 : 3);
     } else {
-      // User manual override or mismatched category
-      // It still executes the chore, but breaks the streak
       this.streak = 0;
       this.multiplier = 1;
-      this.score += 50; // Partial points
+      this.score += 50;
+      progression.addXp(5);
       sound.playError();
       this.particles.createBurst(targetX, targetY, '#64748b', 15);
-      this.particles.createFloatingText(targetX, targetY - 30, `+50 (Custom)`, '#94a3b8', 16);
+      this.particles.createFloatingText(targetX, targetY - 30, `+50`, '#94a3b8', 16);
     }
 
     this.sortedCount++;
+
+    // Achievement checks
+    if (this.sortedCount >= 5) progression.unlock('first_sort');
+    if (this.fs.bytesCleaned >= 100 * 1024 * 1024) progression.unlock('storage_titan');
 
     if (this.score > this.highScore) {
       this.highScore = this.score;
       localStorage.setItem('chaos_sorter_high_score', this.highScore.toString());
     }
 
-    // Await background chore finish (or let it run async)
     await execPromise;
-
-    // Advance to next clutter item
     this.nextFile();
   }
 
@@ -187,6 +208,7 @@ export class GameEngine {
 
     if (isVictory) {
       sound.playVictory();
+      progression.addXp(200);
       this.particles.createBurst(window.innerWidth / 2, window.innerHeight / 2, '#38bdf8', 100);
       this.particles.createBurst(window.innerWidth / 3, window.innerHeight / 2, '#f43f5e', 80);
       this.particles.createBurst((window.innerWidth * 2) / 3, window.innerHeight / 2, '#a855f7', 80);
@@ -213,6 +235,9 @@ export class GameEngine {
         remainingCount: this.remainingFiles.length + (this.currentFile ? 1 : 0),
         bytesCleaned: this.fs.bytesCleaned,
         formattedBytesCleaned: formatBytes(this.fs.bytesCleaned),
+        bossHp: this.bossHp,
+        bossMaxHp: this.bossMaxHp,
+        mode: this.mode,
         state: this.state
       });
     }

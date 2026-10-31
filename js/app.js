@@ -7,11 +7,14 @@ import { CATEGORIES, formatBytes } from './categories.js';
 import { ParticleEngine } from './particles.js';
 import { fsManager } from './fileSystem.js';
 import { GameEngine } from './game.js';
+import { progression } from './achievements.js';
+import { SlasherMiniGame } from './slasherGame.js';
 
 // Elements
 const canvas = document.getElementById('particle-canvas');
 const particles = new ParticleEngine(canvas);
 const game = new GameEngine(fsManager, particles);
+const slasher = new SlasherMiniGame(canvas, fsManager, particles, progression);
 
 // DOM Elements
 const statScore = document.getElementById('stat-score');
@@ -20,7 +23,14 @@ const statTimer = document.getElementById('stat-timer');
 const statCleaned = document.getElementById('stat-cleaned');
 const multiplierTag = document.getElementById('multiplier-tag');
 const comboFill = document.getElementById('combo-fill');
-const currentModeTag = document.getElementById('current-mode-tag');
+
+const playerLevelTitle = document.getElementById('player-level-title');
+const playerXpVal = document.getElementById('player-xp-val');
+const playerXpFill = document.getElementById('player-xp-fill');
+
+const bossBarBanner = document.getElementById('boss-bar-banner');
+const bossHpText = document.getElementById('boss-hp-text');
+const bossHpFill = document.getElementById('boss-hp-fill');
 
 const fileCard = document.getElementById('file-card-element');
 const waitingPrompt = document.getElementById('waiting-prompt');
@@ -31,10 +41,18 @@ const cardRecBadge = document.getElementById('card-rec-badge');
 const filesProgress = document.getElementById('files-progress');
 const footerStatusText = document.getElementById('footer-status-text');
 
+// Tabs & Themes
+const tabClassic = document.getElementById('tab-classic');
+const tabSlasher = document.getElementById('tab-slasher');
+const tabBoss = document.getElementById('tab-boss');
+const themeSelector = document.getElementById('theme-selector');
+
 // Modals
 const modalStart = document.getElementById('modal-start');
 const modalGameOver = document.getElementById('modal-gameover');
 const modalAudit = document.getElementById('modal-audit');
+const modalTrophies = document.getElementById('modal-trophies');
+const badgesContainer = document.getElementById('badges-container');
 const auditTableBody = document.getElementById('audit-table-body');
 
 // Buttons
@@ -48,18 +66,58 @@ const btnUndoLast = document.getElementById('btn-undo-last');
 const btnChangeFolder = document.getElementById('btn-change-folder');
 const btnPlayAgain = document.getElementById('btn-play-again');
 const btnExportManifest = document.getElementById('btn-export-manifest');
+const btnTrophies = document.getElementById('btn-trophies');
+const btnCloseTrophies = document.getElementById('btn-close-trophies');
 
-// Portals
-const portals = {
-  DOCUMENTS: document.getElementById('portal-documents'),
-  MEDIA: document.getElementById('portal-media'),
-  CODE: document.getElementById('portal-code'),
-  ARCHIVES: document.getElementById('portal-archives')
+let currentActiveMode = 'CLASSIC';
+
+// Theme Selector
+themeSelector.addEventListener('change', (e) => {
+  document.documentElement.setAttribute('data-theme', e.target.value);
+});
+
+// Mode Switching Tabs
+function setMode(mode) {
+  currentActiveMode = mode;
+  [tabClassic, tabSlasher, tabBoss].forEach(t => t.classList.remove('active'));
+
+  if (mode === 'CLASSIC') {
+    tabClassic.classList.add('active');
+    bossBarBanner.style.display = 'none';
+    slasher.stop();
+  } else if (mode === 'BOSS') {
+    tabBoss.classList.add('active');
+    bossBarBanner.style.display = 'block';
+    slasher.stop();
+  } else if (mode === 'SLASHER') {
+    tabSlasher.classList.add('active');
+    bossBarBanner.style.display = 'none';
+    fileCard.style.display = 'none';
+    waitingPrompt.style.display = 'none';
+    game.stopTimers();
+    slasher.start(fsManager.files.length > 0 ? fsManager.files : fsManager.initSimulator());
+  }
+
+  if (mode !== 'SLASHER' && game.state === 'IDLE' && fsManager.files.length > 0) {
+    game.start(fsManager.files, mode);
+  }
+}
+
+tabClassic.addEventListener('click', () => setMode('CLASSIC'));
+tabBoss.addEventListener('click', () => setMode('BOSS'));
+tabSlasher.addEventListener('click', () => setMode('SLASHER'));
+
+// Progression Updates
+progression.onProgressUpdate = (prog) => {
+  playerLevelTitle.textContent = `Lvl ${prog.level}: ${prog.title}`;
+  playerXpVal.textContent = `${prog.xp} XP`;
+  playerXpFill.style.width = `${prog.progressPercent}%`;
 };
+progression.onProgressUpdate(progression.getProgressData());
 
-// Initialize Audio Button State
+// Update Audio Toggle State
 function updateAudioBtn() {
-  btnAudioToggle.textContent = sound.isMuted ? '🔇 SFX OFF' : '🔊 SFX ON';
+  btnAudioToggle.textContent = sound.isMuted ? '🔇 MUTE' : '🔊 SFX';
 }
 updateAudioBtn();
 
@@ -68,7 +126,7 @@ btnAudioToggle.addEventListener('click', () => {
   updateAudioBtn();
 });
 
-// Update UI on Stats Change
+// Stats Update Callback
 game.onStatsUpdate = (stats) => {
   statScore.textContent = stats.score.toLocaleString();
   statStreak.textContent = stats.streak;
@@ -83,12 +141,17 @@ game.onStatsUpdate = (stats) => {
     multiplierTag.style.display = 'none';
   }
 
+  if (stats.mode === 'BOSS') {
+    bossHpText.textContent = `${stats.bossHp} / ${stats.bossMaxHp} HP`;
+    bossHpFill.style.width = `${(stats.bossHp / stats.bossMaxHp) * 100}%`;
+  }
+
   filesProgress.textContent = `Cleaned: ${stats.sortedCount} / ${stats.totalInitialCount}`;
 };
 
-// Display New Clutter Card
+// Advance to Next Clutter File Card
 game.onFileAdvance = (file, remaining) => {
-  if (!file) return;
+  if (!file || currentActiveMode === 'SLASHER') return;
 
   waitingPrompt.style.display = 'none';
   fileCard.style.display = 'flex';
@@ -100,10 +163,10 @@ game.onFileAdvance = (file, remaining) => {
   cardRecBadge.style.borderColor = file.targetCategory.color;
   cardRecBadge.style.color = file.targetCategory.color;
 
-  footerStatusText.textContent = `Chore Active: ${fsManager.isRealFolder ? 'Real Hard Drive Sync' : 'Simulator Mode'} (${remaining + 1} remaining)`;
+  footerStatusText.textContent = `Chore Active: ${fsManager.isRealFolder ? 'Real Disk Sync' : 'Simulator Vault'} (${remaining + 1} remaining)`;
 };
 
-// Handle Game State Transitions
+// Game Over / Victory
 game.onStateChange = (state) => {
   if (state === 'VICTORY' || state === 'GAMEOVER') {
     fileCard.style.display = 'none';
@@ -119,12 +182,18 @@ game.onStateChange = (state) => {
   }
 };
 
-// Action Trigger
+// Portals & Directional Sorting
+const portals = {
+  DOCUMENTS: document.getElementById('portal-documents'),
+  MEDIA: document.getElementById('portal-media'),
+  CODE: document.getElementById('portal-code'),
+  ARCHIVES: document.getElementById('portal-archives')
+};
+
 function triggerSort(categoryKey, coordinates = null) {
   const category = CATEGORIES[categoryKey];
   if (!category || game.state !== 'PLAYING') return;
 
-  // Visual pulse on portal
   const portalEl = portals[categoryKey];
   if (portalEl) {
     portalEl.classList.add('active-target');
@@ -134,14 +203,12 @@ function triggerSort(categoryKey, coordinates = null) {
   game.sortFile(category, coordinates);
 }
 
-// Click on Portals
 Object.entries(portals).forEach(([catKey, el]) => {
   el.addEventListener('click', (e) => {
     triggerSort(catKey, { x: e.clientX, y: e.clientY });
   });
 });
 
-// Click Quick Action Buttons on Card
 document.querySelectorAll('[data-btn-cat]').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -150,12 +217,11 @@ document.querySelectorAll('[data-btn-cat]').forEach(btn => {
   });
 });
 
-// Keyboard Controls (1-4, Arrow Keys, Space)
+// Keyboard Controls
 window.addEventListener('keydown', (e) => {
-  if (game.state !== 'PLAYING') return;
+  if (game.state !== 'PLAYING' || currentActiveMode === 'SLASHER') return;
 
   const key = e.key;
-
   if (key === '1' || key === 'ArrowLeft') {
     e.preventDefault();
     triggerSort('DOCUMENTS');
@@ -174,48 +240,6 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Drag and Drop Logic for Center Card
-let isDragging = false;
-let startX = 0;
-let startY = 0;
-
-fileCard.addEventListener('mousedown', (e) => {
-  if (e.target.tagName === 'BUTTON') return;
-  isDragging = true;
-  startX = e.clientX;
-  startY = e.clientY;
-  fileCard.style.transition = 'none';
-});
-
-window.addEventListener('mousemove', (e) => {
-  if (!isDragging) return;
-  const dx = e.clientX - startX;
-  const dy = e.clientY - startY;
-  fileCard.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
-});
-
-window.addEventListener('mouseup', (e) => {
-  if (!isDragging) return;
-  isDragging = false;
-  fileCard.style.transition = 'transform 0.2s ease-out';
-
-  const dx = e.clientX - startX;
-  const dy = e.clientY - startY;
-  const threshold = 120;
-
-  if (dx < -threshold) {
-    triggerSort('DOCUMENTS', { x: e.clientX, y: e.clientY });
-  } else if (dx > threshold) {
-    triggerSort('CODE', { x: e.clientX, y: e.clientY });
-  } else if (dy < -threshold) {
-    triggerSort('MEDIA', { x: e.clientX, y: e.clientY });
-  } else if (dy > threshold) {
-    triggerSort('ARCHIVES', { x: e.clientX, y: e.clientY });
-  }
-
-  fileCard.style.transform = 'translate(0px, 0px) rotate(0deg)';
-});
-
 // Start Real Directory
 btnStartReal.addEventListener('click', async () => {
   sound.init();
@@ -223,9 +247,7 @@ btnStartReal.addEventListener('click', async () => {
     const success = await fsManager.pickRealDirectory();
     if (success && fsManager.files.length > 0) {
       modalStart.style.display = 'none';
-      currentModeTag.textContent = 'REAL FOLDER (LIVE)';
-      currentModeTag.style.color = '#22c55e';
-      game.start(fsManager.files);
+      game.start(fsManager.files, currentActiveMode);
     } else if (success && fsManager.files.length === 0) {
       alert('Selected folder has no loose clutter files in its root! Choose another folder or try the Simulator.');
     }
@@ -234,17 +256,15 @@ btnStartReal.addEventListener('click', async () => {
   }
 });
 
-// Start Simulator Vault (Instant 1-Click)
+// Start Simulator Vault
 btnStartSim.addEventListener('click', () => {
   sound.init();
   const simFiles = fsManager.initSimulator();
   modalStart.style.display = 'none';
-  currentModeTag.textContent = 'SIMULATOR VAULT';
-  currentModeTag.style.color = '#38bdf8';
-  game.start(simFiles);
+  game.start(simFiles, currentActiveMode);
 });
 
-// Undo Last Button
+// Undo
 btnUndoLast.addEventListener('click', async () => {
   const undoneOp = await fsManager.undoLast();
   if (undoneOp) {
@@ -257,24 +277,51 @@ btnUndoLast.addEventListener('click', async () => {
   }
 });
 
+// Trophy Room Rendering
+function renderTrophies() {
+  const data = progression.getProgressData();
+  badgesContainer.innerHTML = data.achievements.map(ach => {
+    const isUnlocked = data.unlockedBadges.includes(ach.id);
+    return `
+      <div class="badge-card ${isUnlocked ? 'unlocked' : ''}">
+        <div style="font-size: 28px; margin-bottom: 6px;">${ach.icon}</div>
+        <div class="pixel-font" style="font-size: 10px; color: ${isUnlocked ? '#f59e0b' : '#64748b'}; margin-bottom: 4px;">${ach.title}</div>
+        <div style="font-size: 10px; color: #94a3b8;">${ach.desc}</div>
+        <div style="font-size: 9px; margin-top: 6px; color: ${isUnlocked ? '#22c55e' : '#475569'}; font-weight: bold;">
+          ${isUnlocked ? '✓ UNLOCKED (+250 XP)' : 'LOCKED'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+btnTrophies.addEventListener('click', () => {
+  renderTrophies();
+  modalTrophies.style.display = 'flex';
+});
+
+btnCloseTrophies.addEventListener('click', () => {
+  modalTrophies.style.display = 'none';
+});
+
 // Audit Modal Logic
 function renderAuditTable() {
   if (fsManager.auditLog.length === 0) {
-    auditTableBody.innerHTML = '<div style="font-size: 12px; color: #64748b; text-align: center; padding: 24px;">No files sorted yet.</div>';
+    auditTableBody.innerHTML = '<div style="font-size: 12px; color: #64748b; text-align: center; padding: 20px;">No files sorted yet.</div>';
     return;
   }
 
   auditTableBody.innerHTML = fsManager.auditLog.map(op => `
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding: 8px 0; font-size: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding: 8px 0; font-size: 11px;">
       <div>
         <strong style="color: ${op.undone ? '#64748b' : '#f8fafc'}; text-decoration: ${op.undone ? 'line-through' : 'none'};">${op.name}</strong>
-        <div style="color: #94a3b8; font-size: 11px;">→ ${op.to} (${formatBytes(op.size)})</div>
+        <div style="color: #94a3b8; font-size: 10px;">→ ${op.to} (${formatBytes(op.size)})</div>
       </div>
       <div style="text-align: right;">
         <span style="color: ${op.undone ? '#f59e0b' : op.success ? '#22c55e' : '#ef4444'}; font-weight: bold;">
           ${op.undone ? 'UNDONE' : op.success ? 'SORTED' : 'FAILED'}
         </span>
-        <div style="color: #64748b; font-size: 10px;">${op.timestamp}</div>
+        <div style="color: #64748b; font-size: 9px;">${op.timestamp}</div>
       </div>
     </div>
   `).join('');
@@ -289,13 +336,8 @@ btnCloseAudit.addEventListener('click', () => {
   modalAudit.style.display = 'none';
 });
 
-btnAuditDownload.addEventListener('click', () => {
-  fsManager.exportAuditReport();
-});
-
-btnExportManifest.addEventListener('click', () => {
-  fsManager.exportAuditReport();
-});
+btnAuditDownload.addEventListener('click', () => fsManager.exportAuditReport());
+btnExportManifest.addEventListener('click', () => fsManager.exportAuditReport());
 
 btnPlayAgain.addEventListener('click', () => {
   modalGameOver.style.display = 'none';

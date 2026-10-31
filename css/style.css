@@ -1,5 +1,5 @@
-/* Chaos Sorter - Cyber Arcade Styling & Multi-Theme Engine */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Press+Start+2P&display=swap');
+/* Chaos Sorter - Cyber Arcade Styling & Aurora Glassmorphism */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Outfit:wght@500;700;800&display=swap');
 
 /* Default Theme: Cyberpunk */
 :root {
@@ -14,7 +14,6 @@
   --color-trash: #64748b;
 }
 
-/* Theme: Synthwave 80s */
 [data-theme="synthwave"] {
   --bg-primary: #180828;
   --bg-card: #2d114d;
@@ -26,7 +25,6 @@
   --color-archive: #f59e0b;
 }
 
-/* Theme: The Matrix */
 [data-theme="matrix"] {
   --bg-primary: #021208;
   --bg-card: #052410;
@@ -38,7 +36,6 @@
   --color-archive: #a3e635;
 }
 
-/* Theme: Midnight Gold */
 [data-theme="midnight"] {
   --bg-primary: #0b0f19;
   --bg-card: #151d30;
@@ -92,7 +89,7 @@ body {
   background-size: 100% 4px;
   pointer-events: none;
   z-index: 2;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 #particle-canvas {
@@ -101,12 +98,12 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* Never block buttons or UI taps */
+  pointer-events: none;
   z-index: 15;
 }
 
 #particle-canvas.slasher-active {
-  pointer-events: auto; /* Only capture clicks when slicing in Slasher mini-game */
+  pointer-events: auto;
   z-index: 25;
 }
 
@@ -116,7 +113,7 @@ body {
 
 #app {
   position: relative;
-  z-index: 30; /* Keep UI controls above background effects */
+  z-index: 30;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -133,7 +130,7 @@ header {
   backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
-  padding: 10px 20px;
+  padding: 10px 18px;
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
 }
 
@@ -158,7 +155,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: 130px;
+  width: 120px;
 }
 
 .xp-label {
@@ -199,7 +196,7 @@ header {
   color: #94a3b8;
   font-size: 11px;
   font-weight: 700;
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -214,7 +211,7 @@ header {
 .stats-bar {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
 }
 
 .stat-item {
@@ -251,7 +248,7 @@ header {
 }
 
 .combo-bar-container {
-  width: 90px;
+  width: 85px;
   height: 5px;
   background: #1e293b;
   border-radius: 3px;
@@ -263,6 +260,37 @@ header {
   height: 100%;
   width: 100%;
   background: linear-gradient(90deg, var(--primary-accent), #f59e0b);
+}
+
+/* User Account Pill in Header */
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-pill:hover {
+  background: rgba(56, 189, 248, 0.2);
+  transform: translateY(-1px);
+}
+
+.user-avatar-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f43f5e, #8b5cf6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
 }
 
 /* Boss Health Bar Banner */
@@ -380,7 +408,7 @@ header {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 100px 20px;
+  padding: 90px 20px;
 }
 
 .file-card {
@@ -485,7 +513,7 @@ footer {
   box-shadow: 0 0 8px #22c55e;
 }
 
-/* Modal */
+/* Modals */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -568,4 +596,159 @@ footer {
   opacity: 1;
   border-color: #f59e0b;
   box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+}
+
+/* =========================================
+   AURORA GLASSMORPHISM SIGN-IN STYLES
+   ========================================= */
+
+.aurora-modal-content {
+  position: relative;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 28px;
+  padding: 36px 32px;
+  max-width: 480px;
+  width: 92%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  animation: modalScale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScale {
+  0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Colorful Aurora Mesh Background inside Sign In card */
+.aurora-glow-1 {
+  position: absolute;
+  top: -60px;
+  left: -40px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f43f5e 0%, transparent 70%);
+  filter: blur(40px);
+  opacity: 0.55;
+  pointer-events: none;
+  animation: floatOrb 8s infinite alternate ease-in-out;
+}
+
+.aurora-glow-2 {
+  position: absolute;
+  bottom: -60px;
+  right: -40px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+  filter: blur(45px);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: floatOrb 10s infinite alternate-reverse ease-in-out;
+}
+
+.aurora-glow-3 {
+  position: absolute;
+  top: 40%;
+  left: 35%;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+  filter: blur(35px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(30px, 30px); }
+}
+
+/* Google Sign In Button */
+.btn-google-auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #ffffff;
+  color: #1f2937;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 18px;
+}
+
+.btn-google-auth:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255, 255, 255, 0.3);
+}
+
+.google-icon-svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Beautiful Input field */
+.aurora-input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  color: #fff;
+  padding: 13px 18px;
+  font-size: 14px;
+  outline: none;
+  margin-top: 14px;
+  transition: all 0.2s ease;
+}
+
+.aurora-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+/* Connected Profile Card State */
+.connected-profile-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 20px;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-avatar-large {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f43f5e, #8b5cf6, #38bdf8);
+  padding: 3px;
+  margin-bottom: 12px;
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
+}
+
+.profile-avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #0f172a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
 }

@@ -1,5 +1,5 @@
 /**
- * Chaos Sorter - Master Application Orchestrator with 5K Email Purge Integration
+ * Chaos Sorter - Master Application Orchestrator with Google Auth & 5K Email Purge Integration
  */
 
 import { sound } from './audio.js';
@@ -18,7 +18,7 @@ const game = new GameEngine(fsManager, particles);
 const slasher = new SlasherMiniGame(canvas, fsManager, particles, progression);
 const emailEngine = new EmailPurgeEngine(particles, progression);
 
-// DOM Elements
+// DOM Elements - Stats
 const statScore = document.getElementById('stat-score');
 const statStreak = document.getElementById('stat-streak');
 const statTimer = document.getElementById('stat-timer');
@@ -30,10 +30,30 @@ const playerLevelTitle = document.getElementById('player-level-title');
 const playerXpVal = document.getElementById('player-xp-val');
 const playerXpFill = document.getElementById('player-xp-fill');
 
+// User Profile & Google Auth Elements
+const btnUserProfile = document.getElementById('btn-user-profile');
+const userAvatarSmall = document.getElementById('user-avatar-small');
+const userNameSmall = document.getElementById('user-name-small');
+
+const modalAuth = document.getElementById('modal-auth');
+const btnCloseAuth = document.getElementById('btn-close-auth');
+const authUnconnectedView = document.getElementById('auth-unconnected-view');
+const authConnectedView = document.getElementById('auth-connected-view');
+const btnGoogleSignin = document.getElementById('btn-google-signin');
+const inputCustomEmail = document.getElementById('input-custom-email');
+const btnManualConnect = document.getElementById('btn-manual-connect');
+const profileAvatarDisplay = document.getElementById('profile-avatar-display');
+const profileNameDisplay = document.getElementById('profile-name-display');
+const profileEmailDisplay = document.getElementById('profile-email-display');
+const btnAuthDisconnect = document.getElementById('btn-auth-disconnect');
+const btnAuthDone = document.getElementById('btn-auth-done');
+
+// Boss Elements
 const bossBarBanner = document.getElementById('boss-bar-banner');
 const bossHpText = document.getElementById('boss-hp-text');
 const bossHpFill = document.getElementById('boss-hp-fill');
 
+// Email Purge Elements
 const emailBarBanner = document.getElementById('email-bar-banner');
 const emailUnreadText = document.getElementById('email-unread-text');
 const emailProgressFill = document.getElementById('email-progress-fill');
@@ -47,6 +67,7 @@ const btnEmailTrash = document.getElementById('btn-email-trash');
 const btnEmailArchive = document.getElementById('btn-email-archive');
 const btnEmailStar = document.getElementById('btn-email-star');
 
+// File Cards
 const fileCard = document.getElementById('file-card-element');
 const waitingPrompt = document.getElementById('waiting-prompt');
 const cardIcon = document.getElementById('card-icon');
@@ -86,6 +107,96 @@ const btnTrophies = document.getElementById('btn-trophies');
 const btnCloseTrophies = document.getElementById('btn-close-trophies');
 
 let currentActiveMode = 'CLASSIC';
+
+// ============================================
+// GOOGLE AUTH & USER PROFILE LOGIC
+// ============================================
+
+function getUserData() {
+  const saved = localStorage.getItem('chaos_sorter_user');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+}
+
+function updateAuthUI() {
+  const user = getUserData();
+  if (user && user.email) {
+    // Signed In State in Header
+    userNameSmall.textContent = user.name || user.email.split('@')[0];
+    userAvatarSmall.textContent = (user.name || user.email)[0].toUpperCase();
+    userAvatarSmall.style.background = 'linear-gradient(135deg, #10b981, #06b6d4)';
+    btnUserProfile.style.borderColor = 'rgba(34, 197, 94, 0.4)';
+
+    // Modal Views
+    authUnconnectedView.style.display = 'none';
+    authConnectedView.style.display = 'block';
+
+    profileAvatarDisplay.textContent = (user.name || user.email)[0].toUpperCase();
+    profileNameDisplay.textContent = user.name || 'Jahanavi';
+    profileEmailDisplay.textContent = user.email;
+  } else {
+    // Not Signed In
+    userNameSmall.textContent = 'Sign In';
+    userAvatarSmall.textContent = '👤';
+    userAvatarSmall.style.background = 'linear-gradient(135deg, #f43f5e, #8b5cf6)';
+    btnUserProfile.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+
+    authUnconnectedView.style.display = 'block';
+    authConnectedView.style.display = 'none';
+  }
+}
+updateAuthUI();
+
+// Open Auth Modal
+btnUserProfile.addEventListener('click', () => {
+  updateAuthUI();
+  modalAuth.style.display = 'flex';
+});
+
+btnCloseAuth.addEventListener('click', () => {
+  modalAuth.style.display = 'none';
+});
+
+btnAuthDone.addEventListener('click', () => {
+  modalAuth.style.display = 'none';
+});
+
+// Perform Google Sign-In
+function handleLoginSuccess(email, name = 'Jahanavi') {
+  const userData = { email, name, connectedAt: new Date().toISOString() };
+  localStorage.setItem('chaos_sorter_user', JSON.stringify(userData));
+
+  sound.playLevelUp();
+  progression.addXp(500); // 500 XP Bonus!
+  particles.createBurst(window.innerWidth / 2, window.innerHeight / 2, '#38bdf8', 60);
+
+  updateAuthUI();
+}
+
+btnGoogleSignin.addEventListener('click', () => {
+  handleLoginSuccess('jsjahanavi.cpu@gmail.com', 'Jahanavi');
+});
+
+btnManualConnect.addEventListener('click', () => {
+  const custom = inputCustomEmail.value.trim();
+  if (custom && custom.includes('@')) {
+    const namePart = custom.split('@')[0];
+    handleLoginSuccess(custom, namePart.charAt(0).toUpperCase() + namePart.slice(1));
+  } else {
+    alert('Please enter a valid Gmail address!');
+  }
+});
+
+btnAuthDisconnect.addEventListener('click', () => {
+  localStorage.removeItem('chaos_sorter_user');
+  updateAuthUI();
+});
 
 // Theme Selector
 themeSelector.addEventListener('change', (e) => {
@@ -282,7 +393,7 @@ document.querySelectorAll('[data-btn-cat]').forEach(btn => {
   });
 });
 
-// Keyboard Controls for both File Sorter and Email Purge
+// Keyboard Controls
 window.addEventListener('keydown', (e) => {
   if (currentActiveMode === 'EMAIL') {
     const key = e.key.toLowerCase();

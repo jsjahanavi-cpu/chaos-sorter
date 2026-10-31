@@ -56,6 +56,7 @@ export class SlasherMiniGame {
 
   start(files) {
     this.active = true;
+    this.canvas.classList.add('slasher-active');
     this.flyingItems = [];
     this.slicedCount = 0;
     this.lives = 3;
@@ -68,9 +69,11 @@ export class SlasherMiniGame {
 
   stop() {
     this.active = false;
+    this.canvas.classList.remove('slasher-active');
     clearTimeout(this.spawnTimer);
     cancelAnimationFrame(this.animId);
     this.flyingItems = [];
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   spawnLoop() {
